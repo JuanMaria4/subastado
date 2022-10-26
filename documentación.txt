@@ -1,0 +1,29 @@
+--5/10--
+<> Lo ultimo que hice:
+    - he añadido un FullScreen
+    - He comprobado que va correcto en movil con diferentes resoluciones 
+
+<> lo que tengo que hacer:
+    - Crear una variable en la escena "inicio" con los datos posteados a la partida desde las rutas anteriores
+    - Para ello debo estudiar el comportamiento de DataManager.
+
+--7/10--
+<> Lo ultimo que hice:
+    - He logrado comunicar las diferentes partes del juego
+    - Para ello he guardado en game una variable (datos_juego) que recogerá todas la variables que necesite
+    - tambien he guardado la istancia de socket = io() en la variable global datos juego
+
+<> lo que tengo que hacer:
+    - Hacer la prueba de formar equipos en la patalla/escena inicial
+    - haciendo uso de socket.io
+
+--9/10--
+<> Lo ultimo que hice:
+    - He creado una variable global que recogera todas las partidas y las gestionar
+    - 
+
+<> lo que tengo que hacer: 
+    - Tenemos una variable global que recoge la partida y la room, existe una comunicacion para actualizar el estado de los jugadores en la partida inicial
+    - Dentro del cliente tenemos la variables jugadores, que se actualiza al entral el cliente en la pantalla inicial y debera actualizarse
+       con cada cambio hecho por cada jugador. Tambien se debera ver esto reflejado en la pantlla. 
+    - Tengo que estuadiar como funcionana los textos en phaser y como llegan a ser objetos pertenecientes a una escena.

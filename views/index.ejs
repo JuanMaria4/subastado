@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salas</title>
+
+    
+    <%- include("partials/head.ejs") %>
+</head>
+<body>
+    <h1>Subastado</h1>
+    <form action="/index" method="post">
+                            
+        <div class="mb-3">
+            <label for="apodo" class="form-label">Apodo:</label>
+            <input type="text" class="form-control" id="apodo" name="apodo">
+ 
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="sala" id="unir" value="unir" checked>
+            <label class="form-check-label" for="unir">
+              Unirse a una partida
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="sala" id="crear" value="crear">
+            <label class="form-check-label" for="crear">
+              Crear una partida
+            </label>
+          </div>
+
+          <div class="col-12">
+            <button class="btn btn-primary" type="submit">Aceptar</button>
+          </div>
+    </form>
+    
+</body>
+</html>

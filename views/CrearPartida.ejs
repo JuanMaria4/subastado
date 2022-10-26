@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <%- include("partials/head.ejs")%>
+
+    <!-- Ejemplo de post:
+        
+            tipo: 'crear',
+            apodo: 'jm',
+            puntos: '1000',
+            name: 'juan',
+            'contraseña': 'contraseña '
+    -->
+
+</head>
+<body>
+    <h1>Nombre Anfitrión: <%= pet.apodo %></h1>
+    <form action="/partida" method="post">
+        <div hidden>
+            <input type="text" class="form-control" id="contraseña" name="tipo" value="crear" hidden>
+            <input type="text" class="form-control" id="contraseña" name="apodo" value="<%= pet.apodo %>" hidden>
+        </div>
+        <div>
+            <select class="form-select" aria-label="Default select example" name="puntos">
+                <option  selected value="300">Puntos de la partida</option>
+                <option value="500">500</option>
+                <option value="700">700</option>
+                <option value="1000">1000</option>
+                <option value="2000">2000</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="name" class="form-label"> >Nombre de la partida:</label>
+            <input type="text" class="form-control" id="name" name="name" >
+        </div>
+        <div class="mb-3">
+            <label for="contraseña" class="form-label">Contraseña:</label>
+            <input type="text" class="form-control" id="contraseña" name="contraseña" >
+        </div>
+        <div class="col-12">
+            <button class="btn btn-primary" type="submit">Crear</button>
+          </div>
+    </form>
+</body>
+</html>

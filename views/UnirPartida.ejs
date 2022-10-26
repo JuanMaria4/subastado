@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <%- include("partials/head.ejs") %>
+</head>
+
+<body>           
+    
+    <!-- Se lanza una alerta si venimos de haber introducido la contraseña incorrecta-->
+    <script>if(<%= contraseña_incorrecta %>){
+        document.write('<div class="alert alert-danger" role="alert">Contraseña incorrecta.</div>');
+    }</script>
+
+
+    <h1>Nombre Jugador: <%= pet.apodo %></h1>
+
+    <form action="/partida" method="post">
+        <div hidden>
+            <input type="text" class="form-control" id="contraseña" name="tipo" value="unir" hidden>
+            <input type="text" class="form-control" id="contraseña" name="apodo" value="<%= pet.apodo %>" hidden>
+        </div>
+        <select class="form-select" aria-label="Default select example" name="partidas_formulario" id="partidas_formulario"></select>
+
+        <div class="mb-3">
+            <label for="contraseña" class="form-label">Contraseña:</label>
+            <input type="text" class="form-control" id="contraseña" name="contraseña" >
+        </div>
+        <div class="col-12">
+            <button class="btn btn-primary" type="submit">Unirse</button>
+        </div>
+    </form>
+
+    <script>
+        var partidas_fomulario = document.getElementById("partidas_formulario");
+        var elem_form = []; // este elementos_formulario es un array que contiene objetos donde se guardaran cada elemento de formulario con su partida asignada a cada objeto que contiene los elementos
+        var indice_elem_form = 0;
+    </script>
+
+    <% for(var partida in lista_partidas){ %>
+        <% if(lista_partidas[partida].jugadores < 4){ %>
+            <script>
+                
+                // Se crea el objeto que guarda la opcion de la partida
+                elem_form.push({partida: <%= lista_partidas[partida].id %>})
+
+                // elemento option que contiene el input del formulario tipo radio
+                elem_form[indice_elem_form].option = document.createElement("option");
+                elem_form[indice_elem_form].option.textContent = "Partida: <%=lista_partidas[partida].nombre_partida %> | Jugadores: <%= lista_partidas[partida].jugadores %>/4 | Puntos: <%= lista_partidas[partida].puntos %>";
+                elem_form[indice_elem_form].option.value = <%= lista_partidas[partida].id %>;
+
+                partidas_fomulario.appendChild(elem_form[indice_elem_form].option);
+
+                /***
+                Ejemplo de post:
+                   tipo: 'unir',
+                    apodo: 'jm',
+                    partidas_formulario: '2',
+                    'contraseña': '12345'
+                ***/
+
+                indice_elem_form++ ;
+            </script> 
+            
+    <% }} %>
+
+    <script>console.log(elem_form)</script>
+
+
+</body>
+</html>

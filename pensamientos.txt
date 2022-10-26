@@ -1,0 +1,28 @@
+nombre de los jugadores dentro del juego y de los socket {jugador0, jugador1, jugador2, jugador3}
+tengo que organizar la variable del servidor partidas, para que una partida reconozca la conexion de un jugador y su desconexio, crear una room que reuna alos jugadores conectados.
+    y ver como se refleja eso en cada partida de cada cliente.
+
+lo que yo quiero es tener un acceso global a la variable partidas, tanto desde routes como desde index con el objeto io 
+
+9/10 -> cuando se desconecte un socket tiene que mandar un evento que llame a la varialbe global partidas. dentro de esta varible seleccionará
+    la partida a la que pertenecía el cliente y restará 1 al nuemro de jugadores. También debo añadir un evento que borre la partida de la varibale 
+    cuando esta tenga 0 jugadores.
+
+Día 17/10 -> 19:45
+    - He solucionado el problema de crear una partida tras abandonar otra. Era un error sintaxtico. 
+    - Fin 9:15
+
+Día 19/10 -> 20:00
+    - Vamos a atacar el problema de los socket, ya dentro de la partida, para elegir equipo y declararse como listo
+    - getJugadoresServer (socket)
+      setJugadoresCliente (io)
+      setJugadoresServer(socket) -> antes debe comprobar el estado jugadores server(getJugadoresServer)
+    - Creo que lo voy a tener que hacer todo más enredado, ya que tendrán que depender los eventes del servidor con el cliente, 
+        esto se va deber a que hay un tiempo de espera entre la comunicación del cliente-servidor. y hay que gestionarlo de alguna manera
+        Estoy barajando que  sea a traves de if que controlen la ejeción según cada requerimineto.
+    - Por lo que sea se establece una nueva conexion ¿?
+    - fin: 21:30
+
+Día 20/10 -> 19:45
+    - sería interesante ver el vide: https://www.youtube.com/watch?v=MYqpw0P31ms&t=1015s&ab_channel=FaztCode para conocer como trabaja los socket 
+    - fin: 20:45

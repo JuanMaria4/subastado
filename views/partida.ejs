@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script type="module">
+
+            // -------- PROTOCOLOS INICIALES ----------//
+
+            // SocketIO
+            const socket = io();
+            const valoresJugador = { // Configuracion inicial del cliente de cara a la partida
+                            idPartida: "<%= id_partida %>",
+                            tipo: "<%= tipo %>",
+                            apodo: "<%= apodo %>"
+            }
+            socket.emit("valoresJugador", valoresJugador); // Se lanza al servidor al inciar la partida
+            //socket.on('prueba', (arg) => {console.log(arg)})
+            
+            // -------- PHASER ---------- //
+
+                import { Inicio } from './phaser/escenas/inicio.js';
+                import { EscenaPartida} from './phaser/escenas/escenaPartida.js';
+
+                    const config = {
+                        type: Phaser.AUTO,
+                        scale: {
+                            mode: Phaser.Scale.FIT,
+                            parent: 'phaser-example',
+                            autoCenter: Phaser.Scale.CENTER_BOTH,
+                            width: 1920,
+                            height: 1080
+                        }, 
+                        
+                        namePlayer: "test",
+
+                        scene: [Inicio, EscenaPartida]
+                    };
+
+                    var game = new Phaser.Game(config);
+                    game.config.namePlayer = "test";
+
+                    //  ----  Variable Global del juego ----  //            
+
+                    game.datos_juego = {   
+                                            apodo: "<%= apodo %>",
+                                            socket: socket,  // direccion a la instacia del socket del cliente
+                                            idPartida: "<%= id_partida %>"  
+                                       };
+
+        </script>
+
+    </head>
+    <body></body>
+</html>
