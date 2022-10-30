@@ -1,5 +1,3 @@
-/*import  "/socket.io/socket.io.js";
-const socket = io();*/
 
 const posEquipos = [
                     {x: 350 + 200, y: 400},
@@ -24,9 +22,6 @@ export class Inicio extends Phaser.Scene {
         this.load.image('fondo','phaser/img/fondo_madera.jpg');
 
         
-        // Cartas <> 2496x1595 px 
-        this.load.spritesheet('cartas', 'phaser/img/baraja.png', { frameWidth: (2496/12) , frameHeight: (1595/5), endFrame: 50 });
-
         // FullScreen
         this.load.spritesheet('full', 'phaser/img/full.png', { frameWidth: (80) , frameHeight: (80), endFrame: 1 });
 
@@ -240,7 +235,9 @@ export class Inicio extends Phaser.Scene {
     inicioPartida(){
 
         this.game.datos_juego.socket.on('inicioPartida', ()=>{
-            this.scene.start('EscenaPartida');       
+            this.game.datos_juego.partida = this.jugadores;
+            this.game.datos_juego.nJugador = this.jugadorId;
+            this.scene.start('Subasta');       
         });
     }   
 

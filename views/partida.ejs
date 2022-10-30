@@ -20,7 +20,7 @@
             // -------- PHASER ---------- //
 
                 import { Inicio } from './phaser/escenas/inicio.js';
-                import { EscenaPartida} from './phaser/escenas/escenaPartida.js';
+                import { Subasta } from './phaser/escenas/subasta.js';
 
                     const config = {
                         type: Phaser.AUTO,
@@ -34,19 +34,33 @@
                         
                         namePlayer: "test",
 
-                        scene: [Inicio, EscenaPartida]
+                        scene: [Inicio, Subasta] // [Inicio, Subasta] [Subasta, Inicio]
                     };
 
                     var game = new Phaser.Game(config);
-                    game.config.namePlayer = "test";
 
                     //  ----  Variable Global del juego ----  //            
-
-                    game.datos_juego = {   
+                    if("false" == "<%= modo_prueba %>"){ 
+                        game.datos_juego = {   
+                                                apodo: "<%= apodo %>",
+                                                socket: socket,  // direccion a la instacia del socket del cliente
+                                                idPartida: "<%= id_partida %>",
+                                                partida: undefined,
+                                                nJugador: undefined  
+                                        };
+                    }else{ // Lanzamiento de la partida para el modo prueba
+                        game.datos_juego = {   
                                             apodo: "<%= apodo %>",
                                             socket: socket,  // direccion a la instacia del socket del cliente
-                                            idPartida: "<%= id_partida %>"  
-                                       };
+                                            idPartida: "<%= id_partida %>",
+                                            partida: [
+                                                {id: "jugador0", nombre: "antonio0", listo: true}, {id: "jugador1", nombre: "bernardo1", listo: true},        
+                                                {id: "jugador2", nombre: "castor2", listo: true}, {id: "jugador3", nombre: "dani3", listo: true}  
+                                            ],
+                                            nJugador: "<%= n_jugador %>"  
+                                       };    
+
+                    }
 
         </script>
 

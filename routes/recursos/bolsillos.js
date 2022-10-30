@@ -1,6 +1,9 @@
 import { Server } from "socket.io";
 import http from "http";
 import Recursos from "./listaPartidas.js"
+import SocketPartida from "./socketPartida.js"
+
+
 var recursos = new Recursos();
 
 
@@ -22,7 +25,26 @@ class Partida{
     
   }
 }
-
+//***************************************************************
+// variable de partida para el modo prueba
+//***************************************************************
+global.variable_partidas.push(  {
+                                  id: 0,
+                                  nombre_partida: 'partida_prueba',
+                                  'contraseña': 'partida_prueba',
+                                  puntos: '500',
+                                  jugadores: 4,
+                                  partida:{
+                                            jugadores: [ 
+                                                        {id: "jugador0", nombre: "antonio0", listo: true}, {id: "jugador1", nombre: "bernardo1", listo: true},        
+                                                        {id: "jugador2", nombre: "castor2", listo: true}, {id: "jugador3", nombre: "dani3", listo: true}  
+                                                       ],
+                                            idPartida: 0,
+                                            nombreRoom: 'room0'
+                                          }
+                                });
+//****************************************************/
+//****************************************************/
 
 export default class Bolsillos{
     constructor(app){
@@ -37,7 +59,7 @@ export default class Bolsillos{
 
  
              
-          //----- Evento inicial del cliente ------//
+          //*********** Evento inicial del cliente *********** //
           socket.on('valoresJugador', (valores)=>{    // Evento que se lanza cada vez que el cliente abre una partida, mandado el objeto con valoresJugadores
               
             if(valores.tipo == 'crear'){ //Si el jugador es el anfitrion
@@ -51,10 +73,13 @@ export default class Bolsillos{
               let i_partida = recursos.buscarPartida(global.variable_partidas, valores.idPartida);
               socket.join(global.variable_partidas[i_partida].partida.nombreRoom) // Se une a la room de la partida a la que pertenece
             }
-
+            
             socket.data.idPartida = valores.idPartida; //Se guarda dentro del socket una elemento que recoge el id de la partida
-            socket.data.jugadrId = undefined; //aquí se guarda el jugador que ha elegido ser el cliente, para luego, si se desconecta borrarlo y dejarlo libre.
+            //socket.data.jugadrId = undefined; //aquí se guarda el jugador que ha elegido ser el cliente, para luego, si se desconecta borrarlo y dejarlo libre.
           });
+
+
+          //*********** Eventos de la sala incial *********** //
 
           // ---- precarga una ver cargada la escena
           socket.on('precarga', (valores)=>{
@@ -93,10 +118,37 @@ export default class Bolsillos{
               // COMIENZA LA PARTIDA
               io.to(global.variable_partidas[i_partida].partida.nombreRoom).emit('inicioPartida');
               console.log("La partida ha dado comienzo");
+              /* Ejemplo de la variable global que lo gestiona todo
+                      {
+                        id: 0,
+                        nombre_partida: 'jm',
+                        'contraseña': 'jm',
+                        puntos: '300',
+                        jugadores: 4,
+                        partida: Partida {
+                          jugadores: [ [Object], [Object], [Object], [Object] ],
+                          idPartida: 0,
+                          nombreRoom: 'room0'
+                        }
+                      }
+
+                      jugadores: [
+                                    { id: 'jugador0', nombre: 'q', listo: true },
+                                    { id: 'jugador1', nombre: 'e', listo: true },
+                                    { id: 'jugador2', nombre: 'w', listo: true },
+                                    { id: 'jugador3', nombre: 'r', listo: true }
+                                  ]
+              */
             }
 
 
           });
+
+          // Eventos de testeo
+          socket.on('testClientePrueba', (valores)=>{
+            let i_partida = recursos.buscarPartida(global.variable_partidas, valores.idPartida);
+            io.to(global.variable_partidas[i_partida].partida.nombreRoom).emit('testClientePrueba');
+          })
 
 
             
@@ -104,7 +156,7 @@ export default class Bolsillos{
           socket.on('disconnect', () => {
               console.log('usuario desconectado');    
 
-              let i_partida = recursos.buscarPartida(global.variable_partidas, socket.data.idPartida);
+              let i_partida = recursos.buscarPartida(global.variable_partidas, socket.data.idPartida);  
 
               //Borra el jugador del array jugadores y el estado
               
@@ -124,6 +176,13 @@ export default class Bolsillos{
               if(global.variable_partidas[i_partida].jugadores < 1){global.variable_partidas.splice(i_partida, 1);}
  
             });
+
+
+          //*********** Eventos de la partida *********** //
+          // Eventos de la partida
+
+          this.socketPartida = new SocketPartida(socket, io);
+          this.socketPartida.test();
 
             
 
