@@ -31,3 +31,11 @@ Día 26/10/22 ->
     - cuando estan todos los clientes listos, el server lo reconoce y manda a todos los clientes un evento de inicio de partida.
     - tengo que hacer que el cliente cambie de escena y guarde el array de los jugadores con sus datosl
     - logrado al guardar en la esena una key con su nombre
+
+Día 3/10/22 ->
+    - llevo hecho los cuatro clientes de testeo para saltarme la escena inicial donde se eligen los equipos
+    - me he quedado hasta donde los 4 jugadores entan iniciados en el método create() y el server tiene constancia de ello
+    - ocurriendo esto, el server crea dentro de la partida, de cada jugador una mano con las cartas ordenadas de forma aleatoria
+    - el proximo objetivo es conseguir, crear la animacion en la que se vea al jugador correspodiente repartiendo las cartas
+    cada uno reciba su mano correspondiente
+    - Tengo que reformarlo todo para crear la opcion de que un jugador este dominado por la maquina, pero cómo hacerlo ¿?

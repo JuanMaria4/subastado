@@ -12,7 +12,7 @@ export class Inicio extends Phaser.Scene {
         super({ key: "inicio" });
 
         this.jugadores = [{}, {}, {}, {}]; // Objeto que recogerá la representacion de cada jugador (sea visible o no, dependerá si se ha entrado en la partida).
-        this.jugadorId = undefined;
+        this.jugadorId = undefined; // numero del jugador -> jugadorX
         this.jugadorListo = undefined;
 
 

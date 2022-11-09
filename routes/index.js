@@ -6,7 +6,7 @@ var recursos = new Recursos();
 
 global.variable_partidas = [];
 
-var numero_partida = 0;
+var numero_partida = 1;
  //{id: 0, nombre_partida: "test", contraseña: 1234, puntos: 300, jugadores: 0}
 
 router.get('/', (req,res,next) => {
@@ -44,8 +44,22 @@ router.post('/partida', (req,res,next) => {
     };
     // Crear la partida
     if(req.body.tipo == "crear"){
-       
-        global.variable_partidas.push({id: numero_partida, nombre_partida: req.body.name, contraseña: req.body.contraseña, puntos: req.body.puntos, jugadores: 1});        
+        
+        // variable bots, que guardará los jugadores que son bot
+        let bots = [];
+        let nBots = 0;
+
+        bots[0] = req.body.robot0 ? true : false;   if (bots[0]) nBots++; 
+        bots[1] = req.body.robot1 ? true : false;   if (bots[1]) nBots++;
+        bots[2] = req.body.robot2 ? true : false;   if (bots[2]) nBots++;
+        bots[3] = req.body.robot3 ? true : false;   if (bots[3]) nBots++;
+
+        global.variable_partidas.push({id: numero_partida, nombre_partida: req.body.name, contraseña: req.body.contraseña, puntos: req.body.puntos, jugadores: 1 + nBots, bots: bots});        
+        
+
+        //console.log(global.variable_partidas[1]); //------ TEST ------
+        
+
         res.render('partida',{
                                 apodo:req.body.apodo, 
                                 id_partida: numero_partida,
@@ -53,6 +67,7 @@ router.post('/partida', (req,res,next) => {
                                 modo_prueba: false,
                                 n_jugador: undefined
                             }); 
+        
         numero_partida = ++numero_partida;
     };
 });

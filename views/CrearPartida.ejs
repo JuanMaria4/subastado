@@ -14,7 +14,8 @@
             apodo: 'jm',
             puntos: '1000',
             name: 'juan',
-            'contraseña': 'contraseña '
+            'contraseña': 'contraseña ',
+            robot: true ¿?
     -->
 
 </head>
@@ -25,6 +26,7 @@
             <input type="text" class="form-control" id="contraseña" name="tipo" value="crear" hidden>
             <input type="text" class="form-control" id="contraseña" name="apodo" value="<%= pet.apodo %>" hidden>
         </div>
+
         <div>
             <select class="form-select" aria-label="Default select example" name="puntos">
                 <option  selected value="300">Puntos de la partida</option>
@@ -34,17 +36,48 @@
                 <option value="2000">2000</option>
             </select>
         </div>
+
         <div class="mb-3">
             <label for="name" class="form-label"> >Nombre de la partida:</label>
             <input type="text" class="form-control" id="name" name="name" >
         </div>
+
         <div class="mb-3">
             <label for="contraseña" class="form-label">Contraseña:</label>
             <input type="text" class="form-control" id="contraseña" name="contraseña" >
         </div>
+
+        <!-- par la ia-->
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="robot0" value="true" id="flexCheckDefault">
+            <label class="form-check-label" for="flexCheckDefault">
+              Jugador1: robot ¿?
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="robot1" value="true" id="flexCheckDefault">
+            <label class="form-check-label" for="flexCheckDefault">
+              Jugador2: robot ¿?
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="robot2" value="true" id="flexCheckDefault">
+            <label class="form-check-label" for="flexCheckDefault">
+              Jugador3: robot ¿?
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="robot3" value="true" id="flexCheckDefault">
+            <label class="form-check-label" for="flexCheckDefault">
+              Jugador4: robot ¿?
+            </label>
+        </div>
+
+        <br>
+        
         <div class="col-12">
             <button class="btn btn-primary" type="submit">Crear</button>
-          </div>
+        </div>
     </form>
 </body>
 </html>
