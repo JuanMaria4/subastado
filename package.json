@@ -1,11 +1,12 @@
 {
-  "name": "proyectoformulario",
-  "version": "1.0.0",
+  "name": "subastado",
+  "version": "1.21",
   "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
