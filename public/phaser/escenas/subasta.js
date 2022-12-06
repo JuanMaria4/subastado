@@ -6,6 +6,7 @@ export class Subasta extends Phaser.Scene {
         super({ key: "Subasta" });
         this.mazo = new Mazo;
         this.mano = []; // contrenda en un inico un array con 10 cartas;
+        this.manosContrincantes = [{n:1, angle: -90, mano:[]}, {n:2, angle: 180, mano:[]}, {n:3, angle: 90, mano:[]}];
  
         
 
@@ -47,6 +48,7 @@ export class Subasta extends Phaser.Scene {
             this.mazo.crearSpriteCarta(this, carta, 500,500,false);
         })
         
+        this.dibujarManoContrincantes();
         //********************************************************//
         //********************************************************//
 
@@ -57,6 +59,7 @@ export class Subasta extends Phaser.Scene {
         this.getMano();
         this.socket.emit('jugadorListoSubasta',{idPartida: this.idPartida});
         //********************************************************//
+
  
 
 
@@ -81,6 +84,7 @@ export class Subasta extends Phaser.Scene {
 
         this.socket.on('setMano', (mano)=>{
             this.mano = this.mazo.construirArrayCartas(JSON.parse(mano));
+            this.mazo.ordenarMano(this.mano);
             this.dibujarMano(this.mano);
             console.log(this.mano); // --- TEST --- //
         });
@@ -100,6 +104,17 @@ export class Subasta extends Phaser.Scene {
 
     testCarta(idCarta){
         this.socket.emit('cartaTestMov', {id:idCarta})  
+    }
+
+    dibujarManoContrincantes(){
+
+        for (let i = 0; i < 10; i++) { this.mazo.crearCartaContrincante(this,1400,150+(i*50), this.manosContrincantes[0]) }
+        
+        for (let i = 0; i < 10; i++) { this.mazo.crearCartaContrincante(this,600+(i*50),150, this.manosContrincantes[1]) }
+
+        for (let i = 0; i < 10; i++) { this.mazo.crearCartaContrincante(this,150,150+(i*50), this.manosContrincantes[2]) }
+
+        
     }
 
 

@@ -72,4 +72,16 @@ export default class Mazo{
         }   
 
     }
-}0
+
+    ordenarMano(mano){
+        mano.sort((a,b)=>{
+            if((Math.trunc(a.id/10)*200-a.puntos*10-a.numero*2) > (Math.trunc(b.id/10)*200-b.puntos*10-b.numero*2)){return 1;}
+            if((Math.trunc(a.id/10)*200-a.puntos*10-a.numero*2) < (Math.trunc(b.id/10)*200-b.puntos*10-b.numero*2)){return -1;}
+            return 0;
+        })
+    }
+
+    crearCartaContrincante(escena, posX, posY, jugadoresContrincantes){
+        jugadoresContrincantes.mano.push(escena.add.sprite(posX, posY, 'cartas', 49 ).setScale(0.5).setAngle(jugadoresContrincantes.angle));
+    }
+}
