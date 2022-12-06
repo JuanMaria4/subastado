@@ -87,9 +87,9 @@ jugadores: [
 export default class Bolsillos{
     constructor(app){
 
-
+      const  PORT = process.env.PORT || 3000;
       const server = http.createServer(app);
-      const httpServer = server.listen(3000);
+      const httpServer = server.listen(PORT);
       const io = new Server(httpServer);
       
       //this.inicioPartida(global.variable_partidas[0].partida);
