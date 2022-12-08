@@ -60,7 +60,7 @@ export default class Mazo{
     }
 
     crearSpriteCarta(escena, carta, posX, posY, test){
-        carta.sprite = escena.add.sprite(posX, posY, 'cartas', carta.idSprite).setInteractive().setScale(0.8);
+        carta.sprite = escena.add.sprite(posX, posY, 'cartas', carta.idSprite).setInteractive().setScale(0.75);
 
         //test -->
         if(test){

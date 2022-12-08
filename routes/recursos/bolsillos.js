@@ -26,6 +26,7 @@ class Partida{
     this.nBots = 0;
     this.establecerBots(partida);
   }
+
   establecerBots(partida){ //guarda los jugadores que corresponden como bots
     this.jugadores.forEach((jugador,i)=>{
       if(partida.bots[i]){
@@ -37,6 +38,7 @@ class Partida{
     })
   }
 }
+
 //***************************************************************
 // variable de partida para el modo prueba
 //***************************************************************
@@ -53,7 +55,8 @@ global.variable_partidas[0] = {
                                                       ],
                                           idPartida: 0,
                                           nombreRoom: 'room0'
-                                        }
+                                        },
+                                completa: true      
                               };
 
 
@@ -103,18 +106,25 @@ export default class Bolsillos{
 
             let i_partida = recursos.buscarPartida(global.variable_partidas, valores.idPartida);
 
-            if(valores.tipo == 'crear'){ //Si el jugador es el anfitrion
-              global.variable_partidas[i_partida].partida = new Partida(global.variable_partidas[i_partida])
-              socket.join(global.variable_partidas[i_partida].partida.nombreRoom) // Se une a la room de la partida a la que pertenece 
+            if(global.variable_partidas[i_partida] != undefined){ // Desconoexion de emergencia en caso de false
+
+
+              if(valores.tipo == 'crear'){ //Si el jugador es el anfitrion
+                global.variable_partidas[i_partida].partida = new Partida(global.variable_partidas[i_partida])
+                socket.join(global.variable_partidas[i_partida].partida.nombreRoom) // Se une a la room de la partida a la que pertenece 
+                
+              }
+              else if(valores.tipo == 'unir'){ //Si el jugador se une a la partida
+                socket.join(global.variable_partidas[i_partida].partida.nombreRoom) // Se une a la room de la partida a la que pertenece
+              }
               
+              socket.data.idPartida = valores.idPartida; //Se guarda dentro del socket una elemento que recoge el id de la partida
+              socket.data.nombreRoom = global.variable_partidas[i_partida].partida.nombreRoom
+              //socket.data.jugadrId = undefined; //aquí se guarda el jugador que ha elegido ser el cliente, para luego, si se desconecta borrarlo y dejarlo libre.
+            }else{
+              socket.emit('forceDisconnect');
             }
-            else if(valores.tipo == 'unir'){ //Si el jugador se une a la partida
-              socket.join(global.variable_partidas[i_partida].partida.nombreRoom) // Se une a la room de la partida a la que pertenece
-            }
-            
-            socket.data.idPartida = valores.idPartida; //Se guarda dentro del socket una elemento que recoge el id de la partida
-            socket.data.nombreRoom = global.variable_partidas[i_partida].partida.nombreRoom
-            //socket.data.jugadrId = undefined; //aquí se guarda el jugador que ha elegido ser el cliente, para luego, si se desconecta borrarlo y dejarlo libre.
+
           });
 
 
@@ -193,24 +203,30 @@ export default class Bolsillos{
           socket.on('disconnect', () => {
               console.log('usuario desconectado');
    
-              let i_partida = recursos.buscarPartida(global.variable_partidas, socket.data.idPartida);  
+              let i_partida = recursos.buscarPartida(global.variable_partidas, socket.data.idPartida); 
 
-              //Borra el jugador del array jugadores y el estado
-              
-              global.variable_partidas[i_partida].partida.jugadores.forEach(jugador=>{
+              if(global.variable_partidas[i_partida] != undefined){  // para resolver el error de jugador que refresca la partida
 
-                if(jugador.id == socket.data.jugadorId){
-                  jugador.nombre = null;
-                  jugador.listo = null;
+                //Borra el jugador del array jugadores y el estado
+                global.variable_partidas[i_partida].partida.jugadores.forEach(jugador=>{
+
+                  if(jugador.id == socket.data.jugadorId){
+                    jugador.nombre = null;
+                    jugador.listo = null;
+                  }
+                });
+    
+                io.to(global.variable_partidas[i_partida].partida.nombreRoom).emit('actualizarCliente', global.variable_partidas[i_partida].partida.jugadores);
+                
+
+                // A la partida que pertenece el cliente, al ser desconectado, se le resta un jugador y comprueba si tiene 0 jugadores, en ese caso se borra la partida
+                global.variable_partidas[i_partida].jugadores--;
+                
+                if(global.variable_partidas[i_partida].jugadores < 1){
+                  console.log("Partida con id: " + global.variable_partidas[i_partida].id + " eliminada") // Avisa que la partida ha sido finalizada
+                  global.variable_partidas.splice(i_partida, 1);
                 }
-              });
-  
-              io.to(global.variable_partidas[i_partida].partida.nombreRoom).emit('actualizarCliente', global.variable_partidas[i_partida].partida.jugadores);
-              
-
-              // A la partida que pertenece el cliente, al ser desconectado, se le resta un jugador y comprueba si tiene 0 jugadores, en ese caso se borra la partida
-              global.variable_partidas[i_partida].jugadores--;
-              if(global.variable_partidas[i_partida].jugadores < 1){global.variable_partidas.splice(i_partida, 1);}
+              }
  
             });
      

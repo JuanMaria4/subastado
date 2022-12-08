@@ -7,7 +7,7 @@ var recursos = new Recursos();
 global.variable_partidas = [];
 
 var numero_partida = 1;
- //{id: 0, nombre_partida: "test", contraseña: 1234, puntos: 300, jugadores: 0}
+ //{id: 0, nombre_partida: "test", contraseña: 1234, puntos: 300, jugadores: 0, completa: false, totalJugadores: 4}
 
 router.get('/', (req,res,next) => {
     res.render('index');
@@ -31,7 +31,16 @@ router.post('/partida', (req,res,next) => {
         //comprobamos si la contraseña es correcta(renderizamos la partida) o incorrecta(renderizamos unir partida)
         // Datos que se la manda a la partida desde unir -> {tipo:unir/crear | apodo:"string" | partida_formulario: id de la partida | contraseña: strign}
         if (recursos.comprobar_contraseña(global.variable_partidas, req.body.partidas_formulario, req.body.contraseña)){
-            global.variable_partidas[recursos.buscarPartida(global.variable_partidas, req.body.partidas_formulario)].jugadores++ ; 
+
+            // partida a la que pertenece el jugador
+            let partida = global.variable_partidas[recursos.buscarPartida(global.variable_partidas, req.body.partidas_formulario)];
+
+            // Sumamos el jugador actual a la variable que cuenta los jugadores de la partida
+            partida.jugadores++ ;
+            
+            // Comprobamos si el numero total de jugadores esta cubierto, para dar la partida como completa y luego no sea mostrada
+            partida.completa = partida.jugadores >= partida.numeroJugadores ? true : false;
+
             res.render('partida',{
                                     apodo: req.body.apodo,
                                     id_partida: req.body.partidas_formulario, 
@@ -54,7 +63,16 @@ router.post('/partida', (req,res,next) => {
         bots[2] = req.body.robot2 ? true : false;   if (bots[2]) nBots++;
         bots[3] = req.body.robot3 ? true : false;   if (bots[3]) nBots++;
 
-        global.variable_partidas.push({id: numero_partida, nombre_partida: req.body.name, contraseña: req.body.contraseña, puntos: req.body.puntos, jugadores: 1 + nBots, bots: bots});        
+        global.variable_partidas.push({
+                                        id: numero_partida, 
+                                        nombre_partida: req.body.name, 
+                                        contraseña: req.body.contraseña, 
+                                        puntos: req.body.puntos, 
+                                        jugadores: 1, 
+                                        bots: bots,
+                                        completa: (nBots == 3 || nBots == 4) ? true : false, // en caso de que se cuente con 3 bots, mas el cliente la partida estará completa
+                                        numeroJugadores: 4 - nBots // numero total de jugadores esperados para la partida
+                                    });        
         
 
         //console.log(global.variable_partidas[1]); //------ TEST ------

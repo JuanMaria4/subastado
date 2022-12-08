@@ -9,6 +9,13 @@
 
             // SocketIO
             const socket = io();
+
+            // funcion para manegar el error de que el jugador recarge la pagina sin pertenecer a ninguna partida y no tire el servidor
+            socket.on('forceDisconnect', function(){
+                        socket.disconnect()
+                        console.log('desconexion de emergencia');
+                    });
+
             const valoresJugador = { // Configuracion inicial del cliente de cara a la partida
                             idPartida: "<%= id_partida %>",
                             tipo: "<%= tipo %>",

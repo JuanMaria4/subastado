@@ -42,7 +42,7 @@
     </script>
 
     <% for(var partida in lista_partidas){ %>
-        <% if(lista_partidas[partida].jugadores < 4){ %>
+        <% if(lista_partidas[partida].completa != true ){ %>
             <script>
                 
                 // Se crea el objeto que guarda la opcion de la partida
@@ -50,7 +50,7 @@
 
                 // elemento option que contiene el input del formulario tipo radio
                 elem_form[indice_elem_form].option = document.createElement("option");
-                elem_form[indice_elem_form].option.textContent = "Partida: <%=lista_partidas[partida].nombre_partida %> | Jugadores: <%= lista_partidas[partida].jugadores %>/4 | Puntos: <%= lista_partidas[partida].puntos %>";
+                elem_form[indice_elem_form].option.textContent = "Partida: <%=lista_partidas[partida].nombre_partida %> | Jugadores: <%= lista_partidas[partida].jugadores + "/" +  lista_partidas[partida].numeroJugadores%> | Puntos: <%= lista_partidas[partida].puntos %>";
                 elem_form[indice_elem_form].option.value = <%= lista_partidas[partida].id %>;
 
                 partidas_fomulario.appendChild(elem_form[indice_elem_form].option);
