@@ -180,6 +180,7 @@ export default class Bolsillos{
           this.socketSubasta = new SocketSubasta(socket, io, global.variable_partidas);
           this.socketSubasta.comienzaSubasta(); // Devuelve a las jugadores el feedback de que los 4 estan iniciado en la subasta
           this.socketSubasta.manoCliente(); // Establece el metodo que devueove al cliente la mano del jugador ya barajadas
+          this.socketSubasta.pujaCliente(); // Establece el proceder de la puja cliente
           /*
           socket.on('jugadorListoSubasta', (valores)=>{
 
@@ -239,15 +240,29 @@ export default class Bolsillos{
     //****************    EVENTOS DEL INICIO DE LA PARTIDA   **********//
     //******************************************************************//
     
-    // Método que establece las variable oportunas para el inicio de la partida tras la sala incial donde se establecen los equipos
+    /*
+    Método que establece las variable oportunas para el inicio de la partida tras la sala incial donde se establecen los equipos
+    Variable que extiende a la variable partida para la subasta
+    */
+
     inicioPartida(partida){
 
       partida.subasta = {
                           jugadorRepartidor: "jugador0", // dentro de partida, crea el objeto subasta, con el jugador que inica repartiendo
-                          subastaComienza: partida.nBots // cuando sea igual a 4 determinara que todos los jugadores están listos
+                          subastaComienza: partida.nBots, // cuando sea igual a 4 determinara que todos los jugadores están listos
+                          rondaInicial: true,
+                          
+                          /* 
+                          cada objeto del array identifica con <> pn <> a la posicion del jugador dentro del array jugadores
+                          para asi luego identificarlos por su id
+                          */
+                          jugadoresPasado: [{pn:0, pasa:false}, {pn:1, pasa:false}, {pn:2, pasa:false}, {pn:3, pasa:false}],
+
+                          pujaVencedora: {jugador: undefined, equipo: undefined, puntos: undefined, palo: undefined}
                         }; 
+
       partida.baraja = []; // Elemento que contendra el conjunto de las cartas, que serán ordenadas de una determinada manera
-      partida.mazo = new Mazo();
+      partida.mazo = new Mazo(); // es una clase que dota de metodos auxiliares tanto al server como al cliente en lo relativo a la mecanica del juego
 
     }
 

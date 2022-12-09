@@ -69,7 +69,7 @@ export class Subasta extends Phaser.Scene {
         })
         
         this.dibujarManoContrincantes();
-        this.dibujarPizarra();
+        this.dibujarPizarra(80);
         //********************************************************//
         //********************************************************//
 
@@ -78,7 +78,7 @@ export class Subasta extends Phaser.Scene {
         //***************** Metodos Iniciales ********************//
         //********************************************************//
         this.getMano();
-        this.socket.emit('jugadorListoSubasta',{idPartida: this.idPartida});
+        this.socket.emit('jugadorListoSubasta',{idPartida: this.idPartida, pnJugador: this.pnJugador});
         //********************************************************//
 
  
@@ -194,11 +194,14 @@ export class Subasta extends Phaser.Scene {
     }
 
     /*
-        Método que muestra por pantalla la opcion de escojer puntos para la subasta.
-        Pasar, pasar con mala leche ó subir(minimo la cantidad actual más 5, máximo 230)
+        Manda el mensaje al server de la apuesta y borra la pizarra. Se queda a la espera de que otro jugador hable.
     */
-    lanzarSubirApuesta(pujaActual){
-        let apuesta = undefined; // {sube: boolean, cantidad: 'paso', 'mala leche', x}
+    lanzarPuja(puja){
+        let sube = puja.sube;
+        let cantidad = puja.cantidad;
+        let actual = puja.actual;
+
+        this.socket.emit('puja', {sube:sube, cantidad:cantidad, actual:actual})
 
     }
 
@@ -207,7 +210,7 @@ export class Subasta extends Phaser.Scene {
     */
    dibujarPizarra(pujaActual){
 
-        let puja = {sube: false, cantidad: 'Paso'}; // contrenda el valor a pujar
+        this.puja = {sube: false, cantidad: 'Paso', actual: pujaActual}; // contendrá el valor a pujar y sera una variable de escena
         let pos = {x:350, y:250};
 
         let pizarra = this.add.image(pos.x, pos.y, 'pizarra').setScale(0.65).setOrigin(0,0);
@@ -217,7 +220,7 @@ export class Subasta extends Phaser.Scene {
         
         let textoTuPuja = this.add.text(pos.x+120, pos.y+80, 'ELIGE TU PUJA:').setFontSize(70).setFill('#000000').setFontFamily('Arial');
         
-        let textoValorPuja = this.add.text(pos.x+320, pos.y+200, puja.cantidad).setFontSize(60).setFill('#42320A').setFontFamily('Arial');
+        let textoValorPuja = this.add.text(pos.x+320, pos.y+200, this.puja.cantidad).setFontSize(60).setFill('#42320A').setFontFamily('Arial');
         
         // Array guardado en la escena que recoge el conjunto de sprite para eliminarlo luego de una vez
         this.conjuntoPizarra = [pizarra,  flechaIzq, flechaDer, okey, textoTuPuja, textoValorPuja];
@@ -225,15 +228,48 @@ export class Subasta extends Phaser.Scene {
         // Añadimos funcionalidad a las botones
         // Flecha izquierda
         flechaIzq.on('pointerdown', function () {this.conjuntoPizarra[1].setFrame(0);}, this);
-        flechaIzq.on('pointerup', function () {this.conjuntoPizarra[1].setFrame(1);}, this);
+        flechaIzq.on('pointerup', function () {this.conjuntoPizarra[1].setFrame(1);                                                    
+                                                switch(this.puja.cantidad){
+                                                    case 'Mala leche!': 
+                                                        break;
+                                                    case 'Paso':  
+                                                        this.puja.cantidad = 'Mala leche!';
+                                                        break;
+                                                    default:
+                                                        if(this.puja.cantidad -5 <= this.puja.actual){
+                                                            this.puja.sube = false; 
+                                                            this.puja.cantidad = 'Paso';
+                                                        } else{
+                                                            this.puja.cantidad = this.puja.cantidad-5;   
+                                                        }
+                                                }
+                                                this.conjuntoPizarra[5].setText(''+this.puja.cantidad);}, this);
 
         // Flecha derecha
         flechaDer.on('pointerdown', function () {this.conjuntoPizarra[2].setFrame(0); this.conjuntoPizarra[2].x += 2;}, this);
-        flechaDer.on('pointerup', function () {this.conjuntoPizarra[2].setFrame(1); this.conjuntoPizarra[2].x -= 2;}, this);
+        flechaDer.on('pointerup', function () {this.conjuntoPizarra[2].setFrame(1); this.conjuntoPizarra[2].x -= 2;                                                    
+                                                switch(this.puja.cantidad){
+                                                    case 'Mala leche!': 
+                                                        this.puja.cantidad = 'Paso';
+                                                        break;
+                                                    case 'Paso':  
+                                                        this.puja.sube = true;
+                                                        this.puja.cantidad = this.puja.actual + 5;
+                                                        break;
+                                                    default:
+                                                        if(this.puja.cantidad +5 <= 230){
+                                                            this.puja.cantidad = this.puja.cantidad+5;  
+                                                        }
+                                                }
+                                                this.conjuntoPizarra[5].setText(''+this.puja.cantidad);}, this);
 
         // Flecha okey
         okey.on('pointerdown', function () {this.conjuntoPizarra[3].setFrame(0);}, this);
-        okey.on('pointerup', function () {this.conjuntoPizarra[3].setFrame(1);}, this);
+        okey.on('pointerup', function () {this.conjuntoPizarra[3].setFrame(1); 
+                                            console.log(this.puja); // TEST
+                                            this.lanzarPuja(this.puja);
+                                            this.conjuntoPizarra.forEach(elem => {elem.destroy()});                                        
+                                        }, this);
 
         
     }

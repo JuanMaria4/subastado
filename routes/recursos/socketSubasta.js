@@ -42,15 +42,17 @@ export default class SocketSubasta{
     comienzaSubasta(){
         this.socket.on('jugadorListoSubasta', (valores)=>{
 
-  
+            //añadimos al jugador humano su id de socket, para reconocer cada jugador por su socket en uso aposteriori
+            this.partidas[valores.idPartida].partida.jugadores[valores.pnJugador].idSocket = this.socket.id;
             
             this.partidas[valores.idPartida].partida.subasta.subastaComienza++;
             //console.log('desde el metodo: ' + this.partidas[valores.idPartida].partida.subasta.subastaComienza); //---TEST--//
             
             if(this.partidas[valores.idPartida].partida.subasta.subastaComienza >= 4){
 
-                // Retrasmite a los clientes que los cuatro jugadores están listos
-                //this.io.to(this.partidas[valores.idPartida].partida.nombreRoom).emit("subastaJugadoresListos"); // No tiene ninguna utilidad real
+                //TEST
+                console.log('lista jugadores con sus id:');
+                console.log(this.partidas[valores.idPartida].partida.jugadores[3])
 
                 //Crea la variable mano en los 4 jugadores con las cartas repartidas
                 this.repartirCartas(this.partidas[valores.idPartida].partida.jugadores, this.partidas[valores.idPartida].partida.mazo, this.partidas[valores.idPartida].partida.baraja);
@@ -70,6 +72,15 @@ export default class SocketSubasta{
             this.socket.emit('setMano', stringMano);
         })
     }
+
+    /*
+        Método que recibe la puja del cliente y en base a esta tiene que
+    */
+    pujaCliente(){
+        this.socket.on('puja', (puja)=>{
+            console.log(puja);
+        })
+    }    
 
  
 }

@@ -84,4 +84,9 @@ export default class Mazo{
     crearCartaContrincante(escena, posX, posY, jugadoresContrincantes){
         jugadoresContrincantes.mano.push(escena.add.sprite(posX, posY, 'cartas', 49 ).setScale(0.5).setAngle(jugadoresContrincantes.angle));
     }
+
+    siguienteSubastador(primeraRonda, jugadores){
+        let siguiente = {jugador: undefined, ultimo: false}
+
+    }
 }
