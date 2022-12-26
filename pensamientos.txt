@@ -1,6 +1,9 @@
-- el servidor lanzará al jugador correpondiente para que escoja su subasta, al parecer el servidor, va orquestarlo todo. El servidor será el encargado de discernir si el jugador es un bots o humano, para automatizar la accion simplemente o lanzarla al jugador, en respectivos casos.
-- Debo crear un métdo que automatice la disposicion de las cartas. Introduciendole una unica cordenada, al jugador al que pertenece y ubicandolas solas por pantalla.
 
+- Debo crear un métdo que automatice la disposicion de las cartas. Introduciendole una unica cordenada, al jugador al que pertenece y ubicandolas solas por pantalla.
+- Cada bot no tiene socket y la informacion que estos guardan en la dinámica del juego. Por lo que cada jugador bot debe tener una instanciar
+    de la ia que los suplante para estos casos.
+    Lo más eficiente sea quizas la duplicidad de los métodos de la subasta del cliente en la instacia de la ia del bot,
+    quizas el objeto ia del bot deba ser una especie de paralelimos de la escena correspondiente con sus metodos adaptados al no uso de socket.
 
 
 - Tengo que dejar claro el buen uso del array jugadores, como variable global, perteneciente a la partida. En algun momento tengo que asignar a cada jugador su id socket. para una correcta comunicación.
@@ -8,10 +11,14 @@
  En el metodo que se comprueban que todos los jugadores estan listo creo que es el mejor lugar para ir 
     actualizando cada id socket.
 
-- Se esta dando lugar a que la variable que en conjunto recoje a los jugadores se esta volviendo bastante difusa. No esta unificada en una sola,
-    diferentes variables bajo el mismo concepto y interralacionadas por algunas varibales estan formando el conjunto de esta.
-    Es decir, la variable que recoge a los jugadores y sus estados para cada situacion esta dividida en partes, lo que simplifica su manejo pero 
-    hace mas complejo su reconocimiento para cada escena, etc ya que forma union con otras variables.
+- la idea no era quizas hacer tantos eventos de escucha y de emit de socket io.
+    Quizas hubiera sido más ideal hacer muy pocos y que estos estuvieran completados en funciones aparte.
+    Creo que lo mejor hubiera sido hacer uno para recibir y otro para mandar. Y este se apoyara en un conjunto de funciones que lo gestionara todo.
+
+ME HE QUEDADO HACIENDO:
+    - Finalmente se lanza al jugador la opción de escoger la muestra
+    Tengo crear la parte grafica de esccoger la muestra
+    El emit que lanzara el cliente al server de que ha concretado la subasta con su muestra y todo lo demás ya.
 
 TAREAS PENDIENTES:
 - Si la partida cuenta con 4 bots, termina dando erros. Tengo que prohibirle esta opcion al cliente.

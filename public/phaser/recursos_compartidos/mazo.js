@@ -85,8 +85,52 @@ export default class Mazo{
         jugadoresContrincantes.mano.push(escena.add.sprite(posX, posY, 'cartas', 49 ).setScale(0.5).setAngle(jugadoresContrincantes.angle));
     }
 
-    siguienteSubastador(primeraRonda, jugadores){
-        let siguiente = {jugador: undefined, ultimo: false}
+    /*
+        Método que va devolver el siguiente jugador que tiene que pujar, y si este es el último que pujará
+            En caso de que sea ultimo == true -> sólo tiene que elegir la muestra.
+        rondaInicial: boolean, jugadoresPasado: array que esta en varaible partida.subasta y ultimoJugador: idJugador
+        repartidor: el ultimo jugador en pujar. Dado que en cada partida va rotandonse
+    */
+    siguienteSubastador(rondaInicial, jugadoresPasado, ultimoPujador, repartidor){
+
+        let siguienteJugador = {jugador: undefined, ultimo: false};
+
+        // funcion que va a devolver si el jugador es definitivo_ultimo al hablar
+        let ultimoJugador = (jugadoresPasado, jugadorId) => { 
+            switch (jugadorId){
+                case 0: if(jugadoresPasado[1]==jugadoresPasado[3]==true) return true;
+                case 1: if(jugadoresPasado[0]==jugadoresPasado[2]==true) return true;
+                case 2: if(jugadoresPasado[1]==jugadoresPasado[3]==true) return true;
+                case 3: if(jugadoresPasado[0]==jugadoresPasado[2]==true) return true;
+                default: return false;
+            }
+        }
+
+        //funcion que va identificar si el proximo jugador a pasado, para devolver el próximo pujador correcto
+        let saltarJugador = (ultimoPujador, jugadoresPasado) => {
+
+            let pujadorProvisional = ultimoPujador == 3 ? 0 : ultimoPujador + 1; // array rotativo
+
+            if(jugadoresPasado[pujadorProvisional]){
+                return saltarJugador(pujadorProvisional, jugadoresPasado)
+            }else{
+                return pujadorProvisional;
+            }
+        }
+             
+        
+
+        if(rondaInicial){
+            siguienteJugador.jugador = ultimoPujador == 3 ? 0 : ultimoPujador + 1; // array rotativo
+            //if(siguienteJugador.jugador == repartidor) siguienteJugador.ultimo = ultimoJugador(jugadoresPasado, siguienteJugador.jugador);
+        }
+
+        if(!rondaInicial){
+            siguienteJugador.jugador = saltarJugador(ultimoPujador, jugadoresPasado);
+            siguienteJugador.ultimo = ultimoJugador(jugadoresPasado, siguienteJugador.jugador);
+        }
+
+        return siguienteJugador;
 
     }
 }

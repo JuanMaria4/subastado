@@ -8,11 +8,6 @@ export class Subasta extends Phaser.Scene {
         this.mano = []; // contrenda en un inico un array con 10 cartas;
         this.manosContrincantes = [{n:1, angle: -90, mano:[]}, {n:2, angle: 180, mano:[]}, {n:3, angle: 90, mano:[]}];
  
-        
-
-        
-
-
     }
 
     preload(){
@@ -20,7 +15,6 @@ export class Subasta extends Phaser.Scene {
         // inciacion de propiedades
         this.idPartida = this.game.datos_juego.idPartida;
         this.idJugador = this.game.datos_juego.nJugador; // "jugadorX" ejemplo -> jugador1
-        this.pnJugador =  this.posicionNJugador(this.game.datos_juego.nJugador); // Es la posicion en el array jugadores
         this.jugadores = this.game.datos_juego.partida // array que contiene los datos de los cuatro jugadores
         this.socket = this.game.datos_juego.socket;
         
@@ -68,8 +62,12 @@ export class Subasta extends Phaser.Scene {
             this.mazo.crearSpriteCarta(this, carta, 500,500,false);
         })
         
+        
         this.dibujarManoContrincantes();
-        this.dibujarPizarra(80);
+        if(this.idJugador == 1){this.dibujarPizarra(80);}
+        this.siguienteSubasta()
+        this.representacionGraficaPuja();
+        
         //********************************************************//
         //********************************************************//
 
@@ -78,7 +76,7 @@ export class Subasta extends Phaser.Scene {
         //***************** Metodos Iniciales ********************//
         //********************************************************//
         this.getMano();
-        this.socket.emit('jugadorListoSubasta',{idPartida: this.idPartida, pnJugador: this.pnJugador});
+        this.socket.emit('jugadorListoSubasta',{idPartida: this.idPartida, idJugador: this.idJugador});
         //********************************************************//
 
  
@@ -93,16 +91,6 @@ export class Subasta extends Phaser.Scene {
         console.log("El jugador que va a repartir las cartas es: " + jugador);
     }
 
-    //dado el id del jugador devuelve que posicion tiene en el array jugadores
-    posicionNJugador(nJugador){
-        let n = undefined;
-        if(nJugador == 'jugador0'){n='0'}
-        if(nJugador == 'jugador1'){n='1'}
-        if(nJugador == 'jugador2'){n='2'}
-        if(nJugador == 'jugador3'){n='3'}
-        return n; // Se devuelve como string para que pueda ser mandado por los socket;
-    }
-
     getMano(){ // Establece los métodos que gestionan los eventos que devuelven la mano tras repartir las cartas al estar todos los jugadores listos
 
         this.socket.on('setMano', (mano)=>{
@@ -114,7 +102,7 @@ export class Subasta extends Phaser.Scene {
 
         this.socket.on('subastaCartasRepartidas', ()=>{
  
-            this.socket.emit('getMano', {idPartida: this.idPartida, nJugador: this.pnJugador});
+            this.socket.emit('getMano', {idPartida: this.idPartida, nJugador: this.idJugador});
             
         });
     }
@@ -148,10 +136,10 @@ export class Subasta extends Phaser.Scene {
 
         // array que contiene los nombres del resto de jugadores ajustado a su posición
         let listaNombres = []; 
-        if(this.pnJugador == 0) listaNombres = [ this.jugadores[1].nombre, this.jugadores[2].nombre, this.jugadores[3].nombre];
-        if(this.pnJugador == 1) listaNombres = [ this.jugadores[2].nombre, this.jugadores[3].nombre, this.jugadores[0].nombre];
-        if(this.pnJugador == 2) listaNombres = [ this.jugadores[3].nombre, this.jugadores[0].nombre, this.jugadores[1].nombre];
-        if(this.pnJugador == 3) listaNombres = [ this.jugadores[0].nombre, this.jugadores[1].nombre, this.jugadores[2].nombre];
+        if(this.idJugador == 0) listaNombres = [ this.jugadores[1].nombre, this.jugadores[2].nombre, this.jugadores[3].nombre];
+        if(this.idJugador == 1) listaNombres = [ this.jugadores[2].nombre, this.jugadores[3].nombre, this.jugadores[0].nombre];
+        if(this.idJugador == 2) listaNombres = [ this.jugadores[3].nombre, this.jugadores[0].nombre, this.jugadores[1].nombre];
+        if(this.idJugador == 3) listaNombres = [ this.jugadores[0].nombre, this.jugadores[1].nombre, this.jugadores[2].nombre];
         
         // lugar de la pantalla donde estarán los nombres de cada jugador
         let posNom = [
@@ -170,16 +158,32 @@ export class Subasta extends Phaser.Scene {
     // ************** MÉTODOS QUE ORQUESTAN LA SUBASTA ********************** //
 
     /*
+        Representación gráfica de la puja del jugador
+    */
+    representacionGraficaPuja(){
+        this.socket.on('pujaJugador', (puja)=>{
+            console.log('El jugador ' + puja.nombreJugador + ': ' + puja.cantidad);
+        })
+    }
+
+    /*
         Devuelve un objeto que contendrá: jugador subastador,
         puntos de la subasta.
         Lanzará la llamada a que el jugador subastador eliga muestra y de comienzo a la partida. 
         En el estraño caso de que todos pasen, el último jugador no podrá pasar.
     */
-    comenzarSubasta(jugadorRepartidor){
-        let puntos = undefined;
-        let jugadorSubastador;
+    siguienteSubasta(jugadorRepartidor){
+        this.socket.on('siguientePujador', (situacionPuja) =>{
 
-        return {jugadorSubastador: jugadorSubastador, puntos: puntos}
+            if(situacionPuja.ultimo){
+                this.escogerMuestra(situacionPuja.pujaActual); // Es el jugador que llevará la subasta y por tanto tiene que escoger muestra
+            }else{
+                this.dibujarPizarra(situacionPuja.pujaActual); // Debe lanzar una nueva puja
+            }
+
+
+        });
+
 
     }
 
@@ -197,11 +201,11 @@ export class Subasta extends Phaser.Scene {
         Manda el mensaje al server de la apuesta y borra la pizarra. Se queda a la espera de que otro jugador hable.
     */
     lanzarPuja(puja){
-        let sube = puja.sube;
+        let pasa = puja.pasa;
         let cantidad = puja.cantidad;
-        let actual = puja.actual;
+        let pujaActual = puja.actual;
 
-        this.socket.emit('puja', {sube:sube, cantidad:cantidad, actual:actual})
+        this.socket.emit('puja', {idJugador: this.idJugador, idPartida: this.idPartida, pasa: pasa, cantidad: cantidad, actual: pujaActual})
 
     }
 
@@ -210,7 +214,7 @@ export class Subasta extends Phaser.Scene {
     */
    dibujarPizarra(pujaActual){
 
-        this.puja = {sube: false, cantidad: 'Paso', actual: pujaActual}; // contendrá el valor a pujar y sera una variable de escena
+        this.puja = {pasa: true, cantidad: 'Paso', actual: pujaActual}; // contendrá el valor a pujar y sera una variable de escena
         let pos = {x:350, y:250};
 
         let pizarra = this.add.image(pos.x, pos.y, 'pizarra').setScale(0.65).setOrigin(0,0);
@@ -237,7 +241,7 @@ export class Subasta extends Phaser.Scene {
                                                         break;
                                                     default:
                                                         if(this.puja.cantidad -5 <= this.puja.actual){
-                                                            this.puja.sube = false; 
+                                                            this.puja.pasa = true; 
                                                             this.puja.cantidad = 'Paso';
                                                         } else{
                                                             this.puja.cantidad = this.puja.cantidad-5;   
@@ -253,7 +257,7 @@ export class Subasta extends Phaser.Scene {
                                                         this.puja.cantidad = 'Paso';
                                                         break;
                                                     case 'Paso':  
-                                                        this.puja.sube = true;
+                                                        this.puja.pasa = false;
                                                         this.puja.cantidad = this.puja.actual + 5;
                                                         break;
                                                     default:
@@ -265,13 +269,87 @@ export class Subasta extends Phaser.Scene {
 
         // Flecha okey
         okey.on('pointerdown', function () {this.conjuntoPizarra[3].setFrame(0);}, this);
-        okey.on('pointerup', function () {this.conjuntoPizarra[3].setFrame(1); 
+        okey.on('pointerup', function () {this.conjuntoPizarra[3].setFrame(1);
+                                            
+                                            if(!this.puja.pasa) this.puja.actual = this.puja.cantidad; // actualiza la puja actual en caso de que suba
                                             console.log(this.puja); // TEST
                                             this.lanzarPuja(this.puja);
                                             this.conjuntoPizarra.forEach(elem => {elem.destroy()});                                        
                                         }, this);
 
         
+    }
+
+    /*
+        Dibuja la pizarra donde se escogerá la muestra
+    */
+    escogerMuestra(pujaActual){
+        
+        this.puja = {pasa: true, cantidad: 'Paso', actual: pujaActual}; // contendrá el valor a pujar y sera una variable de escena
+        let pos = {x:350, y:250};
+
+        let pizarra = this.add.image(pos.x, pos.y, 'pizarra').setScale(0.65).setOrigin(0,0);
+        let flechaIzq = this.add.image(pos.x+150, pos.y+320, 'flechas', 1).setOrigin(0, 0).setInteractive();
+        let flechaDer = this.add.image(pos.x+550, pos.y+320, 'flechas', 1).setOrigin(1, 1).setInteractive().setAngle(180);
+        let okey = this.add.image(pos.x+325, pos.y+320, 'okey', 1).setOrigin(0, 0).setScale(1.5).setInteractive();
+        
+        let textoTuPuja = this.add.text(pos.x+120, pos.y+80, 'ELIGE TU PUJA:').setFontSize(70).setFill('#000000').setFontFamily('Arial');
+        
+        let textoValorPuja = this.add.text(pos.x+320, pos.y+200, this.puja.cantidad).setFontSize(60).setFill('#42320A').setFontFamily('Arial');
+        
+        // Array guardado en la escena que recoge el conjunto de sprite para eliminarlo luego de una vez
+        this.conjuntoPizarra = [pizarra,  flechaIzq, flechaDer, okey, textoTuPuja, textoValorPuja];
+
+        // Añadimos funcionalidad a las botones
+        // Flecha izquierda
+        flechaIzq.on('pointerdown', function () {this.conjuntoPizarra[1].setFrame(0);}, this);
+        flechaIzq.on('pointerup', function () {this.conjuntoPizarra[1].setFrame(1);                                                    
+                                                switch(this.puja.cantidad){
+                                                    case 'Mala leche!': 
+                                                        break;
+                                                    case 'Paso':  
+                                                        this.puja.cantidad = 'Mala leche!';
+                                                        break;
+                                                    default:
+                                                        if(this.puja.cantidad -5 <= this.puja.actual){
+                                                            this.puja.pasa = true; 
+                                                            this.puja.cantidad = 'Paso';
+                                                        } else{
+                                                            this.puja.cantidad = this.puja.cantidad-5;   
+                                                        }
+                                                }
+                                                this.conjuntoPizarra[5].setText(''+this.puja.cantidad);}, this);
+
+        // Flecha derecha
+        flechaDer.on('pointerdown', function () {this.conjuntoPizarra[2].setFrame(0); this.conjuntoPizarra[2].x += 2;}, this);
+        flechaDer.on('pointerup', function () {this.conjuntoPizarra[2].setFrame(1); this.conjuntoPizarra[2].x -= 2;                                                    
+                                                switch(this.puja.cantidad){
+                                                    case 'Mala leche!': 
+                                                        this.puja.cantidad = 'Paso';
+                                                        break;
+                                                    case 'Paso':  
+                                                        this.puja.pasa = false;
+                                                        this.puja.cantidad = this.puja.actual + 5;
+                                                        break;
+                                                    default:
+                                                        if(this.puja.cantidad +5 <= 230){
+                                                            this.puja.cantidad = this.puja.cantidad+5;  
+                                                        }
+                                                }
+                                                this.conjuntoPizarra[5].setText(''+this.puja.cantidad);}, this);
+
+        // Flecha okey
+        okey.on('pointerdown', function () {this.conjuntoPizarra[3].setFrame(0);}, this);
+        okey.on('pointerup', function () {this.conjuntoPizarra[3].setFrame(1);
+                                            
+                                            if(!this.puja.pasa) this.puja.actual = this.puja.cantidad; // actualiza la puja actual en caso de que suba
+                                            console.log(this.puja); // TEST
+                                            this.lanzarPuja(this.puja);
+                                            this.conjuntoPizarra.forEach(elem => {elem.destroy()});                                        
+                                        }, this);
+
+    
+
     }
 
 

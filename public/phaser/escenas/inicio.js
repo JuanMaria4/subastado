@@ -67,7 +67,7 @@ export class Inicio extends Phaser.Scene {
                     jugador.image = this.add.image(posEquipos[i].x, posEquipos[i].y,'espacio_libre').setInteractive();
                     jugador.image.on('pointerup', ()=>{
 
-                        this.jugadorId = "jugador" + i;
+                        this.jugadorId = i;
                         jugador.nombre = this.game.datos_juego.apodo;
                         this.actualizarServer(this.game.datos_juego.idPartida, this.jugadores, this, this.jugadorId);
 
@@ -155,7 +155,7 @@ export class Inicio extends Phaser.Scene {
                 jugador.image.on('pointerup', ()=>{
                     
                     this.actualizarId();
-                    this.jugadorId = "jugador" + i;
+                    this.jugadorId =  i;
                     jugador.nombre = this.game.datos_juego.apodo;
 
 

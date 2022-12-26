@@ -3,6 +3,7 @@ export default class SocketSubasta{
         this.socket = socket;
         this.io = io;
         this.partidas = partidas; //variable que recoje las partidas generales
+        
     }
 
     // Método que rellena una baraja con las cartas del mazo de forma aleatoria
@@ -43,16 +44,15 @@ export default class SocketSubasta{
         this.socket.on('jugadorListoSubasta', (valores)=>{
 
             //añadimos al jugador humano su id de socket, para reconocer cada jugador por su socket en uso aposteriori
-            this.partidas[valores.idPartida].partida.jugadores[valores.pnJugador].idSocket = this.socket.id;
+            this.partidas[valores.idPartida].partida.jugadores[valores.idJugador].idSocket = this.socket.id;
+
+            //añadimos a cada socket su id del jugador, para reconocer el jugador desde el server
+            this.socket.data.idJugador = valores.idJugador;
+
             
             this.partidas[valores.idPartida].partida.subasta.subastaComienza++;
-            //console.log('desde el metodo: ' + this.partidas[valores.idPartida].partida.subasta.subastaComienza); //---TEST--//
             
             if(this.partidas[valores.idPartida].partida.subasta.subastaComienza >= 4){
-
-                //TEST
-                console.log('lista jugadores con sus id:');
-                console.log(this.partidas[valores.idPartida].partida.jugadores[3])
 
                 //Crea la variable mano en los 4 jugadores con las cartas repartidas
                 this.repartirCartas(this.partidas[valores.idPartida].partida.jugadores, this.partidas[valores.idPartida].partida.mazo, this.partidas[valores.idPartida].partida.baraja);
@@ -72,15 +72,60 @@ export default class SocketSubasta{
             this.socket.emit('setMano', stringMano);
         })
     }
-
+     
     /*
         Método que recibe la puja del cliente y en base a esta tiene que
+        puja {pasa: boolean, cantidad: number o string, actual: es la cantidad de la puja dominante}
     */
     pujaCliente(){
-        this.socket.on('puja', (puja)=>{
-            console.log(puja);
+        this.socket.on('puja', (puja)=>{ // puja: {idJugador: n, idPartida: n, pasa:pasa, cantidad:cantidad, actual:actual}
+            this.actualizarPuja(puja);
         })
-    }    
+    }
+
+    actualizarPuja(puja){ // puja: {idJugador: n, idPartida: n, pasa:pasa, cantidad:cantidad, actual:actual}
+
+ 
+        // Se da el problema que al ser un bot no tene los datos referentes del socket. Debo crear una variable globar que lo gestiones todo¿?.
+        let jugador = puja.idJugador;
+        let partida = this.partidas[puja.idPartida].partida;
+        
+
+        // mandamos al resto de jugadores la puja del jugador 
+        this.io.to(partida.nombreRoom).emit('pujaJugador', {jugador: jugador, cantidad: puja.cantidad, nombreJugador: partida.jugadores[jugador].nombre})
+
+        // actualizamos: 
+       
+        //situacion del jugador respecto a la subasta de su partida
+        partida.subasta.jugadoresPasado[jugador] = puja.pasa;
+        //si ha finalizado la ronda inicial
+        if(jugador == partida.subasta.jugadorRepartidor) partida.subasta.rondaInicial = false;
+
+        // establecemos el siguiente pujador <no esta del todo bien hecho>*
+        let siguientePujador = partida.mazo.siguienteSubastador(partida.subasta.rondaInicial, 
+                                                                partida.subasta.jugadoresPasado, 
+                                                                jugador, 
+                                                                partida.subasta.jugadorRepartidor)
+
+
+        //discernimos si es un robot o humano
+
+        /*
+            Le vamos a mandar a los jugadores o bot si es el ultimo y la puja actual.
+            En caso de ser el último tendrá solamente que escoger muestra y el será el jugador que lleve la subasta
+        */
+
+        if(partida.jugadores[siguientePujador.jugador].bot){
+            console.log("El siguiente jugador es un Robot y es el: " + partida.jugadores[siguientePujador.jugador].nombre) //TEST
+            //simula la llamada al socket del cliente.
+            partida.jugadores[siguientePujador.jugador].ia.lanzarPuja(siguientePujador.ultimo, puja.actual, this);
+        }else{
+            // Le manda al jugador si va a ser el ultimo, para que además eliga muestra y consolide la subasta. La puja actual que es necesaria para el proceso.
+            this.io.to(partida.jugadores[siguientePujador.jugador].idSocket).emit('siguientePujador', {ultimo: siguientePujador.ultimo, pujaActual: puja.actual});
+        }
+    }
+    
+
 
  
 }

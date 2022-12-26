@@ -3,6 +3,7 @@ import http from "http";
 import Recursos from "./listaPartidas.js"
 import SocketSubasta from "./socketSubasta.js"
 import Mazo from "../../public/phaser/recursos_compartidos/mazo.js";
+import Ia from "../../public/phaser/recursos_compartidos/ia.js";
 
 
 var recursos = new Recursos();
@@ -17,9 +18,9 @@ Quizas se deba guardar dentro de la partida correspodiente de la variable globar
 class Partida{
   constructor(partida){
     
-    this.jugadores = [        /* Equipo Nosotros */                         /* Equipo Ellos */      
-                      {id: "jugador0", nombre: null, listo: null, bot: false}, {id: "jugador1", nombre: null, listo: null, bot: false},        
-                      {id: "jugador2", nombre: null, listo: null, bot: false}, {id: "jugador3", nombre: null, listo: null, bot: false}  
+    this.jugadores = [           /* Equipo Nosotros */                            /* Equipo Ellos */      
+                      {id: 0, nombre: null, listo: null, bot: false}, {id: 1, nombre: null, listo: null, bot: false},        
+                      {id: 2, nombre: null, listo: null, bot: false}, {id: 3, nombre: null, listo: null, bot: false}  
                       ];
     this.idPartida = partida.id; // id de la partida a la que pertenece
     this.nombreRoom = "room" + this.idPartida; // nombre de la room de la partida
@@ -33,6 +34,7 @@ class Partida{
         jugador.nombre = "robot" + i; 
         jugador.listo = true; 
         jugador.bot = true;
+        jugador.ia = new Ia(jugador.id, partida.id);
         this.nBots++;
       }
     })
@@ -45,13 +47,13 @@ class Partida{
 global.variable_partidas[0] = {
                                 id: 0,
                                 nombre_partida: 'partida_prueba',
-                                'contraseña': 'partida_prueba',
+                                contraseña: 'partida_prueba',
                                 puntos: '500',
                                 jugadores: 4,
                                 partida:{
                                           jugadores: [ 
-                                                      {id: "jugador0", nombre: "antonio0", listo: true}, {id: "jugador1", nombre: "bernardo1", listo: true},        
-                                                      {id: "jugador2", nombre: "castor2", listo: true}, {id: "jugador3", nombre: "dani3", listo: true}  
+                                                      {id: 0, nombre: "antonio0", listo: true}, {id: 1, nombre: "bernardo1", listo: true},        
+                                                      {id: 2, nombre: "castor2", listo: true}, {id: 3, nombre: "dani3", listo: true}  
                                                       ],
                                           idPartida: 0,
                                           nombreRoom: 'room0'
@@ -118,6 +120,7 @@ export default class Bolsillos{
                 socket.join(global.variable_partidas[i_partida].partida.nombreRoom) // Se une a la room de la partida a la que pertenece
               }
               
+              // VARIABLE DATA DEL SOCKET en cargada de guardar variables globales respectivas a este
               socket.data.idPartida = valores.idPartida; //Se guarda dentro del socket una elemento que recoge el id de la partida
               socket.data.nombreRoom = global.variable_partidas[i_partida].partida.nombreRoom
               //socket.data.jugadrId = undefined; //aquí se guarda el jugador que ha elegido ser el cliente, para luego, si se desconecta borrarlo y dejarlo libre.
@@ -248,16 +251,10 @@ export default class Bolsillos{
     inicioPartida(partida){
 
       partida.subasta = {
-                          jugadorRepartidor: "jugador0", // dentro de partida, crea el objeto subasta, con el jugador que inica repartiendo
+                          jugadorRepartidor: 0, // dentro de partida, crea el objeto subasta, con el jugador que inica repartiendo
                           subastaComienza: partida.nBots, // cuando sea igual a 4 determinara que todos los jugadores están listos
                           rondaInicial: true,
-                          
-                          /* 
-                          cada objeto del array identifica con <> pn <> a la posicion del jugador dentro del array jugadores
-                          para asi luego identificarlos por su id
-                          */
-                          jugadoresPasado: [{pn:0, pasa:false}, {pn:1, pasa:false}, {pn:2, pasa:false}, {pn:3, pasa:false}],
-
+                          jugadoresPasado: [false,false,false,false], // array que recoje los jugadores que han pasado asociados a su orden
                           pujaVencedora: {jugador: undefined, equipo: undefined, puntos: undefined, palo: undefined}
                         }; 
 
