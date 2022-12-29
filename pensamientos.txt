@@ -15,10 +15,14 @@
     Quizas hubiera sido más ideal hacer muy pocos y que estos estuvieran completados en funciones aparte.
     Creo que lo mejor hubiera sido hacer uno para recibir y otro para mandar. Y este se apoyara en un conjunto de funciones que lo gestionara todo.
 
+OBJETIVOS ACTUALES:
+    -bocadillo gráficos que represente la puja de cada jugador
+    -desarrollar quien hablará primero, segun el repartidor, y que vaya avanzando por ronda
+    -ia en la subasta
+    - elegida la muestra lanzar la partida
+
 ME HE QUEDADO HACIENDO:
-    - Finalmente se lanza al jugador la opción de escoger la muestra
-    Tengo crear la parte grafica de esccoger la muestra
-    El emit que lanzara el cliente al server de que ha concretado la subasta con su muestra y todo lo demás ya.
+
 
 TAREAS PENDIENTES:
 - Si la partida cuenta con 4 bots, termina dando erros. Tengo que prohibirle esta opcion al cliente.

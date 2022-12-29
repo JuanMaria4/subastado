@@ -23,11 +23,12 @@ export default class SocketSubasta{
 
     // Método que dado un array de jugadores, crea en cada uno de ellos una mano, que será un array que recogera 10 cartas aleatorias
     repartirCartas(jugadores, mazo, barajaPartida){
+        //barajaPartida = mazo.construirBaraja(mazo.baraja); // !!!!!!  cartas no aleatorias !!!!!!
         barajaPartida = this.barajarBaraja(mazo, barajaPartida);
 
         for(let j=0; j<4; j++){
             
-            jugadores[j].mano = [];
+            jugadores[j].mano = []; // Dentro de la variable global de la propia partida, cada jugador tendrá su mano
             
             for(let i=0; i<10; i++){
                 jugadores[j].mano[i] = barajaPartida[0];
@@ -59,6 +60,11 @@ export default class SocketSubasta{
                 
                 //Trasmite a los jugadores que las cartas están repartidas
                 this.io.to(this.partidas[valores.idPartida].partida.nombreRoom).emit("subastaCartasRepartidas");
+
+                //Le da a la ia la direccion en memoria del array que contiene la mano de los jugadores bots
+                this.partidas[valores.idPartida].partida.jugadores.forEach(jugador => {
+                    if(jugador.bot) jugador.ia.jugador = jugador;
+                });
             }
 
 
@@ -78,12 +84,12 @@ export default class SocketSubasta{
         puja {pasa: boolean, cantidad: number o string, actual: es la cantidad de la puja dominante}
     */
     pujaCliente(){
-        this.socket.on('puja', (puja)=>{ // puja: {idJugador: n, idPartida: n, pasa:pasa, cantidad:cantidad, actual:actual}
+        this.socket.on('puja', (puja)=>{ // puja: {idJugador: n, idPartida: n, pasa:pasa, cantidad:cantidad, actual:actual, jugadorActual: idJugador}
             this.actualizarPuja(puja);
         })
     }
 
-    actualizarPuja(puja){ // puja: {idJugador: n, idPartida: n, pasa:pasa, cantidad:cantidad, actual:actual}
+    actualizarPuja(puja){ // puja: {idJugador: n, idPartida: n, pasa:pasa, cantidad:cantidad, actual:actual, jugadorActual: idJugador}
 
  
         // Se da el problema que al ser un bot no tene los datos referentes del socket. Debo crear una variable globar que lo gestiones todo¿?.
@@ -101,11 +107,21 @@ export default class SocketSubasta{
         //si ha finalizado la ronda inicial
         if(jugador == partida.subasta.jugadorRepartidor) partida.subasta.rondaInicial = false;
 
-        // establecemos el siguiente pujador <no esta del todo bien hecho>*
-        let siguientePujador = partida.mazo.siguienteSubastador(partida.subasta.rondaInicial, 
-                                                                partida.subasta.jugadoresPasado, 
-                                                                jugador, 
-                                                                partida.subasta.jugadorRepartidor)
+        // discernimos si ya ha terminado la puja, o hay que elegir el siguiente pujador
+        let siguientePujador = undefined;
+
+
+        if(partida.mazo.comprobarUltimaPuja(partida.subasta.rondaInicial, partida.subasta.jugadoresPasado, puja.jugadorActual)){
+
+            siguientePujador = {jugador: puja.jugadorActual, ultimo: true};
+
+        }else{
+
+            siguientePujador = partida.mazo.siguienteSubastador(partida.subasta.rondaInicial, 
+                                                                    partida.subasta.jugadoresPasado, 
+                                                                    jugador, 
+                                                                    partida.subasta.jugadorRepartidor)
+        }
 
 
         //discernimos si es un robot o humano
@@ -116,13 +132,33 @@ export default class SocketSubasta{
         */
 
         if(partida.jugadores[siguientePujador.jugador].bot){
-            console.log("El siguiente jugador es un Robot y es el: " + partida.jugadores[siguientePujador.jugador].nombre) //TEST
+
             //simula la llamada al socket del cliente.
-            partida.jugadores[siguientePujador.jugador].ia.lanzarPuja(siguientePujador.ultimo, puja.actual, this);
+            if(siguientePujador.ultimo){partida.jugadores[siguientePujador.jugador].ia.elegirMuestra(puja.pujaActual, this);}
+            if(!siguientePujador.ultimo){partida.jugadores[siguientePujador.jugador].ia.lanzarPuja(puja.pujaActual, puja.jugadorActual, this);}
+
         }else{
             // Le manda al jugador si va a ser el ultimo, para que además eliga muestra y consolide la subasta. La puja actual que es necesaria para el proceso.
-            this.io.to(partida.jugadores[siguientePujador.jugador].idSocket).emit('siguientePujador', {ultimo: siguientePujador.ultimo, pujaActual: puja.actual});
+            this.io.to(partida.jugadores[siguientePujador.jugador].idSocket).emit('siguientePujador', {ultimo: siguientePujador.ultimo, pujaActual: puja.pujaActual, jugadorActual: puja.jugadorActual});
         }
+    }
+
+    muestraElegida(){
+        this.socket.on('muestraElegida', (subasta)=>{ //{idJugador: this.jugadorId, idPartida: this.idPartida, cantidad: puntos, muestra: muestra}
+            this.muestraElg(subasta)
+        })
+    }
+
+    muestraElg(subasta){
+        console.log(subasta); // TEST
+
+            let partida = this.partidas[subasta.idPartida].partida;
+            this.io.to(partida.nombreRoom).emit('pujaFinalizada', {idJugador: subasta.idJugador, cantidad: subasta.cantidad, muestra: subasta.muestra})
+    }
+
+    listoParaPartida(){
+ 
+        this.socket.on('listoParaPartida', (args)=>{console.log('un jugador mas listo para darlo bien duro papi')});
     }
     
 

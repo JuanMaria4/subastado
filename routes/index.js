@@ -75,7 +75,6 @@ router.post('/partida', (req,res,next) => {
                                     });        
         
 
-        //console.log(global.variable_partidas[1]); //------ TEST ------
         
 
         res.render('partida',{

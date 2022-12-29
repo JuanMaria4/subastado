@@ -32,6 +32,8 @@ export default class Mazo{
                                 id: i //id de la carta, respectivo a su orden
                         }
         }
+
+        return baraja;
     }
 
     // Método que dado un array de cartas, en base a su id, te devuelve los objetos cartas
@@ -97,11 +99,12 @@ export default class Mazo{
 
         // funcion que va a devolver si el jugador es definitivo_ultimo al hablar
         let ultimoJugador = (jugadoresPasado, jugadorId) => { 
+
             switch (jugadorId){
-                case 0: if(jugadoresPasado[1]==jugadoresPasado[3]==true) return true;
-                case 1: if(jugadoresPasado[0]==jugadoresPasado[2]==true) return true;
-                case 2: if(jugadoresPasado[1]==jugadoresPasado[3]==true) return true;
-                case 3: if(jugadoresPasado[0]==jugadoresPasado[2]==true) return true;
+                case 0: if(jugadoresPasado[1]&&jugadoresPasado[3]) {return true};
+                case 1: if(jugadoresPasado[0]&&jugadoresPasado[2]) {return true};
+                case 2: if(jugadoresPasado[1]&&jugadoresPasado[3]) {return true};
+                case 3: if(jugadoresPasado[0]&&jugadoresPasado[2]) {return true};
                 default: return false;
             }
         }
@@ -132,5 +135,30 @@ export default class Mazo{
 
         return siguienteJugador;
 
+    }
+
+    /*
+        Comprueba si es la puja final para establecerla como el jugador que llevará la subasta
+        Solo en caso de haber pasado la ronda inicial
+    */
+    comprobarUltimaPuja(rondaInicial, jugadoresPasado, pujadorActual){
+
+        let subastaFinalizada = false 
+
+        // funcion que va a devolver si el jugador es definitivo_ultimo al hablar
+        let ultimoJugador = (jugadoresPasado, jugadorId) => { 
+            switch (jugadorId){
+                case 0: if(jugadoresPasado[1]&&jugadoresPasado[3]) return true;
+                case 1: if(jugadoresPasado[0]&&jugadoresPasado[2]) return true;
+                case 2: if(jugadoresPasado[1]&&jugadoresPasado[3]) return true;
+                case 3: if(jugadoresPasado[0]&&jugadoresPasado[2]) return true;
+                default: return false;
+            }
+        }
+        
+        if (!rondaInicial){
+            subastaFinalizada = ultimoJugador(jugadoresPasado, pujadorActual);
+        }
+        return subastaFinalizada;
     }
 }

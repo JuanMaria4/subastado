@@ -184,6 +184,8 @@ export default class Bolsillos{
           this.socketSubasta.comienzaSubasta(); // Devuelve a las jugadores el feedback de que los 4 estan iniciado en la subasta
           this.socketSubasta.manoCliente(); // Establece el metodo que devueove al cliente la mano del jugador ya barajadas
           this.socketSubasta.pujaCliente(); // Establece el proceder de la puja cliente
+          this.socketSubasta.muestraElegida(); // Establece el proceder tras finalizar la puja con eleccion de muestra
+          this.socketSubasta.listoParaPartida();
           /*
           socket.on('jugadorListoSubasta', (valores)=>{
 
