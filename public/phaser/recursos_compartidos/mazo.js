@@ -62,20 +62,11 @@ export default class Mazo{
     }
 
     crearSpriteCarta(escena, carta, posX, posY, test){
+        // El sprite se guarda dentro de un objeto sprite de la carta
         carta.sprite = escena.add.sprite(posX, posY, 'cartas', carta.idSprite).setInteractive().setScale(0.75);
-
-        //test -->
-        if(test){
-            carta.sprite.on('pointerup', ()=>{
-                console.log(carta)
-                let idCarta = carta.id.toString(10);
-                escena.testCarta(idCarta);    
-            });
-        }   
-
     }
 
-    ordenarMano(mano){
+    ordenarMano(mano){ // Dado un array de cartas lo ordena por su palo y numero
         mano.sort((a,b)=>{
             if((Math.trunc(a.id/10)*200-a.puntos*10-a.numero*2) > (Math.trunc(b.id/10)*200-b.puntos*10-b.numero*2)){return 1;}
             if((Math.trunc(a.id/10)*200-a.puntos*10-a.numero*2) < (Math.trunc(b.id/10)*200-b.puntos*10-b.numero*2)){return -1;}
@@ -83,8 +74,12 @@ export default class Mazo{
         })
     }
 
-    crearCartaContrincante(escena, posX, posY, jugadoresContrincantes){
-        jugadoresContrincantes.mano.push(escena.add.sprite(posX, posY, 'cartas', 49 ).setScale(0.5).setAngle(jugadoresContrincantes.angle));
+    crearCartaContrincante(escena, posX, posY, carta, modoDearrollo, angle){
+
+        if(modoDearrollo) carta.sprite = escena.add.sprite(posX, posY, 'cartas', carta.idSprite ).setScale(0.5).setAngle(angle);
+        
+        if(!modoDearrollo) carta.sprite = escena.add.sprite(posX, posY, 'cartas', 49 ).setScale(0.5).setAngle(angle);
+        
     }
 
     /*

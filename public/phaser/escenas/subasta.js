@@ -7,6 +7,8 @@ export class Subasta extends Phaser.Scene {
         this.mazo = new Mazo;
         this.mano = []; // contrenda en un inico un array con 10 cartas;
         this.manosContrincantes = [{n:1, angle: -90, mano:[]}, {n:2, angle: 180, mano:[]}, {n:3, angle: 90, mano:[]}];
+        this.modoDearrollo = false;
+       
  
     }
 
@@ -17,6 +19,7 @@ export class Subasta extends Phaser.Scene {
         this.idJugador = this.game.datos_juego.nJugador; // "jugadorX" ejemplo -> jugador1
         this.jugadores = this.game.datos_juego.partida // array que contiene los datos de los cuatro jugadores
         this.socket = this.game.datos_juego.socket;
+        this.game.datos_juego.mano = undefined // variable donde se va guardar la mano del jugador entre escenas
         this.arrayBocadillos = [];
         
         // Fondo
@@ -64,13 +67,14 @@ export class Subasta extends Phaser.Scene {
         })
         
         
-        this.dibujarManoContrincantes();
-        if(this.idJugador == 1){this.dibujarPizarra(50, 1);} // TEST en el que el jugador pirmero en hablar...
+        this.dibujarManoContrincantes(this.modoDearrollo);
         this.siguienteSubasta();
         this.representacionGraficaPuja();
         this.mostrarPujaDerecha();
         this.pujaFinalizada();
 
+        this.socket.on('listoParaPartida', ()=>{this.scene.start('Juego'); }); // Cambio de escena tras recibir fin subasta;
+        //this.socket.on('actualizarCliente', ()=>{console.log('un jugador marcho... :(')})
         
         //********************************************************//
         //********************************************************//
@@ -100,6 +104,7 @@ export class Subasta extends Phaser.Scene {
         this.socket.on('setMano', (mano)=>{
             this.mano = this.mazo.construirArrayCartas(JSON.parse(mano));
             this.mazo.ordenarMano(this.mano);
+            this.game.datos_juego.mano = this.mano; // se guarda la mano en la variable global de pahser
             this.dibujarMano(this.mano);
             console.log(this.mano); // --- TEST --- //
         });
@@ -121,13 +126,29 @@ export class Subasta extends Phaser.Scene {
         this.socket.emit('cartaTestMov', {id:idCarta})  
     }
 
-    dibujarManoContrincantes(){ // Dibuja por pantalla revorso de carta y su posicion
+    dibujarManoContrincantes(modoDearrollo){ // Dibuja por pantalla revorso de carta y su posicion
 
-        for (let i = 0; i < 10; i++) { this.mazo.crearCartaContrincante(this,1370,150+(i*50), this.manosContrincantes[0]) }
+        /*
+            Solucion temporal, para no solicitar al servidor la mano de los contrincantes. Realmente es una mano ficticia
+            que no sabes la carta que tiene.
+            por eso añadimos a la mano del contrincante un objeto vacio que representa la carta, no conocida.
+            El modo desarrollo portanto va a ser falso.
+        */
+
+        for (let i = 0; i < 10; i++) {  
+            this.manosContrincantes[0].mano.push({})
+            this.mazo.crearCartaContrincante(this,1370,150+(i*50), this.manosContrincantes[0].mano[i], modoDearrollo, this.manosContrincantes[0].angle) 
+        }
         
-        for (let i = 0; i < 10; i++) { this.mazo.crearCartaContrincante(this,550+(i*50),130, this.manosContrincantes[1]) }
+        for (let i = 0; i < 10; i++) { 
+            this.manosContrincantes[1].mano.push({})
+            this.mazo.crearCartaContrincante(this,550+(i*50),130, this.manosContrincantes[1].mano[i], modoDearrollo, this.manosContrincantes[1].angle) 
+        }
 
-        for (let i = 0; i < 10; i++) { this.mazo.crearCartaContrincante(this,130,150+(i*50), this.manosContrincantes[2]) }
+        for (let i = 0; i < 10; i++) { 
+            this.manosContrincantes[2].mano.push({})
+            this.mazo.crearCartaContrincante(this,130,150+(i*50), this.manosContrincantes[2].mano[i], modoDearrollo, this.manosContrincantes[2].angle) 
+        }
 
         this.desplegarNombresContrincantes();
         
@@ -395,7 +416,8 @@ export class Subasta extends Phaser.Scene {
     }
 
     lanzarListoPartida(){
-        this.socket.emit('listoParaPartida', {});
+        let idPartida = this.idPartida
+        this.socket.emit('listoParaPartida', idPartida);
     }
 
     pujaFinalizada(){

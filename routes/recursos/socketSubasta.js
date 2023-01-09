@@ -1,3 +1,7 @@
+import Recursos from "./listaPartidas.js"
+
+var recursos = new Recursos();
+
 export default class SocketSubasta{
     constructor(socket, io, partidas){
         this.socket = socket;
@@ -44,27 +48,33 @@ export default class SocketSubasta{
     comienzaSubasta(){
         this.socket.on('jugadorListoSubasta', (valores)=>{
 
+            // funcion necesaria para encontrar en el array de partidas por el id
+            let i_partida = recursos.buscarPartida(global.variable_partidas, valores.idPartida); 
+
             //añadimos al jugador humano su id de socket, para reconocer cada jugador por su socket en uso aposteriori
-            this.partidas[valores.idPartida].partida.jugadores[valores.idJugador].idSocket = this.socket.id;
+            this.partidas[i_partida].partida.jugadores[valores.idJugador].idSocket = this.socket.id;
 
             //añadimos a cada socket su id del jugador, para reconocer el jugador desde el server
             this.socket.data.idJugador = valores.idJugador;
 
             
-            this.partidas[valores.idPartida].partida.subasta.subastaComienza++;
+            this.partidas[i_partida].partida.subasta.subastaComienza++;
             
-            if(this.partidas[valores.idPartida].partida.subasta.subastaComienza >= 4){
+            if(this.partidas[i_partida].partida.subasta.subastaComienza >= 4){
 
                 //Crea la variable mano en los 4 jugadores con las cartas repartidas
-                this.repartirCartas(this.partidas[valores.idPartida].partida.jugadores, this.partidas[valores.idPartida].partida.mazo, this.partidas[valores.idPartida].partida.baraja);
+                this.repartirCartas(this.partidas[i_partida].partida.jugadores, this.partidas[i_partida].partida.mazo, this.partidas[i_partida].partida.baraja);
                 
                 //Trasmite a los jugadores que las cartas están repartidas
-                this.io.to(this.partidas[valores.idPartida].partida.nombreRoom).emit("subastaCartasRepartidas");
+                this.io.to(this.partidas[i_partida].partida.nombreRoom).emit("subastaCartasRepartidas"); 
 
                 //Le da a la ia la direccion en memoria del array que contiene la mano de los jugadores bots
-                this.partidas[valores.idPartida].partida.jugadores.forEach(jugador => {
+                this.partidas[i_partida].partida.jugadores.forEach(jugador => {
                     if(jugador.bot) jugador.ia.jugador = jugador;
                 });
+
+                // Lanza el comienzo del circuito de la subasta, dando lugar a que el primer jugador puje
+                this.lanzarPrimerPujador(i_partida);
             }
 
 
@@ -73,8 +83,12 @@ export default class SocketSubasta{
 
     manoCliente(){ // Método que solicitada la mamo que le corresponde por un jugador se la manda del server al cliente
         this.socket.on('getMano', (valores)=>{
-            let mano = this.partidas[valores.idPartida].partida.jugadores[valores.nJugador].mano;
-            let stringMano = JSON.stringify(this.partidas[valores.idPartida].partida.mazo.decostruirArrayCartas(mano)); 
+
+            // funcion necesaria para encontrar en el array de partidas por el id
+            let i_partida = recursos.buscarPartida(global.variable_partidas, valores.idPartida); 
+
+            let mano = this.partidas[i_partida ].partida.jugadores[valores.nJugador].mano;
+            let stringMano = JSON.stringify(this.partidas[i_partida ].partida.mazo.decostruirArrayCartas(mano)); 
             this.socket.emit('setMano', stringMano);
         })
     }
@@ -91,10 +105,13 @@ export default class SocketSubasta{
 
     actualizarPuja(puja){ // puja: {idJugador: n, idPartida: n, pasa:pasa, cantidad:cantidad, actual:actual, jugadorActual: idJugador}
 
+        // funcion necesaria para encontrar en el array de partidas por el id
+        let i_partida = recursos.buscarPartida(global.variable_partidas, puja.idPartida); 
+
  
         // Se da el problema que al ser un bot no tene los datos referentes del socket. Debo crear una variable globar que lo gestiones todo¿?.
         let jugador = puja.idJugador;
-        let partida = this.partidas[puja.idPartida].partida;
+        let partida = this.partidas[i_partida].partida;
         
 
         // mandamos al resto de jugadores la puja del jugador 
@@ -149,19 +166,60 @@ export default class SocketSubasta{
         })
     }
 
-    muestraElg(subasta){
-        console.log(subasta); // TEST
+    muestraElg(subasta){ //{idJugador: this.idJugador, idPartida: this.idPartida, cantidad: pujaActual, muestra: muestra}
 
-            let partida = this.partidas[subasta.idPartida].partida;
+            // funcion necesaria para encontrar en el array de partidas por el id
+            let i_partida = recursos.buscarPartida(global.variable_partidas, subasta.idPartida);
+
+            let partida = this.partidas[i_partida].partida;
+            partida.subasta.pujaVencedora = {//pujaVencedora: {jugador: undefined, equipo: undefined, puntos: undefined, palo: undefined}
+                jugador: subasta.idJugador,
+                equipo: this.partidas[i_partida].partida.jugadores[subasta.idJugador].equipo,
+                puntos: subasta.cantidad,
+                palo: subasta.muestra
+            }
+            
             this.io.to(partida.nombreRoom).emit('pujaFinalizada', {idJugador: subasta.idJugador, cantidad: subasta.cantidad, muestra: subasta.muestra})
     }
 
     listoParaPartida(){
  
-        this.socket.on('listoParaPartida', (args)=>{console.log('un jugador mas listo para darlo bien duro papi')});
+        this.socket.on('listoParaPartida', (idPartida)=>{
+
+            // funcion necesaria para encontrar en el array de partidas por el id
+            let i_partida = recursos.buscarPartida(global.variable_partidas, idPartida);
+
+            this.partidas[i_partida].partida.subasta.subastaFinaliza++
+            if(this.partidas[i_partida].partida.subasta.subastaFinaliza++ >= 4) {
+                console.log('Empieza la partida: ' + this.partidas[i_partida].partida.subasta.pujaVencedora.equipo) //TEST
+                this.io.to(this.partidas[i_partida].partida.nombreRoom).emit('listoParaPartida');
+            }
+        });
     }
     
+    /*
+        Método inicial que va a lanzar la subasta
+        El primer jugador en hablar será el siguiente al jugador repartidor
+        Jugador repartidor es variable guardada en partida.subasta.jugadorRepartidor
 
+        Este método será iniciado tras estar todos los jugadores listos, con cartas repartidas
+    */
+    
+    lanzarPrimerPujador(idPartida){
+
+        let jugadorRepartidor = this.partidas[idPartida].partida.subasta.jugadorRepartidor;
+        let jugadorInicial = jugadorRepartidor == 3 ? 0 : jugadorRepartidor+1 //array rotativo
+        let partida = this.partidas[idPartida].partida
+        
+
+        // Discernimos si es bot o humano
+        if(partida.jugadores[jugadorInicial].bot){
+            partida.jugadores[jugadorInicial].ia.lanzarPuja(45, jugadorInicial , this)
+        }else{
+            this.io.to(partida.jugadores[jugadorInicial].idSocket).emit('siguientePujador', {ultimo: false, pujaActual: 45, jugadorActual: jugadorInicial});
+        }
+
+    }
 
  
 }

@@ -28,6 +28,8 @@
 
                 import { Inicio } from './phaser/escenas/inicio.js';
                 import { Subasta } from './phaser/escenas/subasta.js';
+                import { Juego } from './phaser/escenas/juego.js';
+                
 
                     const config = {
                         type: Phaser.AUTO,
@@ -41,7 +43,7 @@
                         
                         namePlayer: "test",
 
-                        scene: [Inicio, Subasta] // [Inicio, Subasta] [Subasta, Inicio]
+                        scene: [Inicio, Subasta, Juego] // [Inicio, Subasta] [Subasta, Inicio]
                     };
 
                     var game = new Phaser.Game(config);

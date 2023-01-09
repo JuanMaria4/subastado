@@ -217,6 +217,7 @@ export class Inicio extends Phaser.Scene {
 
     // funcion que reconoce el evente enviado por el servidor
     // cada vez que recibe el evento, éste actualiza la pantalla del cliente
+    
     actualizarCliente(){
 
         this.game.datos_juego.socket.on('actualizarCliente', (jugadoresServer) => {

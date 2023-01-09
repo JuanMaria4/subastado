@@ -16,14 +16,17 @@
     Creo que lo mejor hubiera sido hacer uno para recibir y otro para mandar. Y este se apoyara en un conjunto de funciones que lo gestionara todo.
 
 OBJETIVOS ACTUALES:
-    -bocadillo gráficos que represente la puja de cada jugador
-    -desarrollar quien hablará primero, segun el repartidor, y que vaya avanzando por ronda
-    -ia en la subasta
-    - elegida la muestra lanzar la partida
+    - Vamos a efectuar el test de mover carta:
+        El jugador actual cliqueará una carta y esta hasta el centro de la pantalla, asi con el resto de jugadores.
+        LLegada la carta al centro de la pantalla, le tocará al siguiente jugador, seleccionar una carta.
 
 ME HE QUEDADO HACIENDO:
+ -Error con el metodo que solicita las cartas de lso manosContrincantes
+ - voy a probar a cambiar el objto con el array de manosContrincantes
+     por un objeto simple
 
 
 TAREAS PENDIENTES:
 - Si la partida cuenta con 4 bots, termina dando erros. Tengo que prohibirle esta opcion al cliente.
 - Hay que controllar que los jugadores no escojan el mismo nombre.
+- Al cerrar y recargar la pagina crashea el servidor, esto hay que solucionarlo. 

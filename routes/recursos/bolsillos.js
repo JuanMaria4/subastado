@@ -4,6 +4,7 @@ import Recursos from "./listaPartidas.js"
 import SocketSubasta from "./socketSubasta.js"
 import Mazo from "../../public/phaser/recursos_compartidos/mazo.js";
 import Ia from "../../public/phaser/recursos_compartidos/ia.js";
+import { funcionesJuego } from "./socketJuego.js"; 
 
 
 var recursos = new Recursos();
@@ -18,9 +19,9 @@ Quizas se deba guardar dentro de la partida correspodiente de la variable globar
 class Partida{
   constructor(partida){
     
-    this.jugadores = [           /* Equipo Nosotros */                            /* Equipo Ellos */      
-                      {id: 0, nombre: null, listo: null, bot: false}, {id: 1, nombre: null, listo: null, bot: false},        
-                      {id: 2, nombre: null, listo: null, bot: false}, {id: 3, nombre: null, listo: null, bot: false}  
+    this.jugadores = [           /* Equipo Nosotros */                                                     /* Equipo Ellos */      
+                      {id: 0, nombre: null, listo: null, bot: false, equipo:'Nosotros'}, {id: 1, nombre: null, listo: null, bot: false, equipo:'Ellos'},        
+                      {id: 2, nombre: null, listo: null, bot: false, equipo:'Nosotros'}, {id: 3, nombre: null, listo: null, bot: false, equipo:'Ellos'}  
                       ];
     this.idPartida = partida.id; // id de la partida a la que pertenece
     this.nombreRoom = "room" + this.idPartida; // nombre de la room de la partida
@@ -171,7 +172,7 @@ export default class Bolsillos{
               // COMIENZA LA SUBASTA              
               this.inicioPartida(global.variable_partidas[i_partida].partida);
               io.to(global.variable_partidas[i_partida].partida.nombreRoom).emit('inicioPartida'); // lanza el cambio de escena a los cliente
-              console.log("La partida ha dado comienzo");
+              console.log("La subasta ha dado comienzo");
  
                         
             }
@@ -186,16 +187,24 @@ export default class Bolsillos{
           this.socketSubasta.pujaCliente(); // Establece el proceder de la puja cliente
           this.socketSubasta.muestraElegida(); // Establece el proceder tras finalizar la puja con eleccion de muestra
           this.socketSubasta.listoParaPartida();
-          /*
-          socket.on('jugadorListoSubasta', (valores)=>{
 
-            global.variable_partidas[valores.idPartida].partida.subasta.subastaComienza++;
-            console.log('desde el metodo: ' + global.variable_partidas[valores.idPartida].partida.subasta.subastaComienza);
-            if(global.variable_partidas[valores.idPartida].partida.subasta.subastaComienza >= 4){
-                io.to(global.variable_partidas[valores.idPartida].partida.nombreRoom).emit("subastaJugadoresListos");
-            }
-          });
-          */
+          //*********** Eventos del Juego *********** //
+
+          
+          //on 
+          socket.on('serverJuego', (arg)=>{
+            funcionesJuego.get(arg.funcion)(arg.argumentos, this, socket);
+          })
+
+
+          // VA TENER QUE QEDAR EN DESUSO, DADO QUE SOLO RESPONDE AL PRIMER SOCKET QUE SOLICITA Y CUANDO LE EMITE EL SEGUNDO SE LO MANDA DE NUEVO AL PRIMERO. DESCONOZCO POR QUÉ.
+          // A PARTIR DE AHORA SERÁ EL SOCKET DIRECTAMENTE DESDE LA FUNCION EL QUE EMITA
+          // emit
+          this.emitirClienteJuego = (funcionSolicitada, objetoMandado) => {
+            // la idea es conducir todo el flujo de emit por aqui por si fuera necesario añadir un try
+            socket.emit('juego', {funcion: funcionSolicitada, argumentos: objetoMandado});
+          }
+
 
           //*********** Eventos de testeo *********** //
           socket.on('cartaTestMov', (valores)=>{
@@ -208,6 +217,7 @@ export default class Bolsillos{
           //*********** Eventos de desconexión del cliente   *********** //
           socket.on('disconnect', () => {
               console.log('usuario desconectado');
+              
    
               let i_partida = recursos.buscarPartida(global.variable_partidas, socket.data.idPartida); 
 
@@ -221,9 +231,11 @@ export default class Bolsillos{
                     jugador.listo = null;
                   }
                 });
-    
-                io.to(global.variable_partidas[i_partida].partida.nombreRoom).emit('actualizarCliente', global.variable_partidas[i_partida].partida.jugadores);
                 
+                // Solo para cuando se está en la escen inicial
+                if(global.variable_partidas[i_partida].partida.subasta == undefined){
+                  io.to(global.variable_partidas[i_partida].partida.nombreRoom).emit('actualizarCliente', global.variable_partidas[i_partida].partida.jugadores);
+                }
 
                 // A la partida que pertenece el cliente, al ser desconectado, se le resta un jugador y comprueba si tiene 0 jugadores, en ese caso se borra la partida
                 global.variable_partidas[i_partida].jugadores--;
@@ -251,10 +263,12 @@ export default class Bolsillos{
     */
 
     inicioPartida(partida){
-
+      
+      // La subasta tiene un método que restaura todos sus valores de cara a las siguientes rondas de la inicial
       partida.subasta = {
                           jugadorRepartidor: 0, // dentro de partida, crea el objeto subasta, con el jugador que inica repartiendo
                           subastaComienza: partida.nBots, // cuando sea igual a 4 determinara que todos los jugadores están listos
+                          subastaFinaliza: partida.nBots,
                           rondaInicial: true,
                           jugadoresPasado: [false,false,false,false], // array que recoje los jugadores que han pasado asociados a su orden
                           pujaVencedora: {jugador: undefined, equipo: undefined, puntos: undefined, palo: undefined}
@@ -262,7 +276,8 @@ export default class Bolsillos{
 
       partida.baraja = []; // Elemento que contendra el conjunto de las cartas, que serán ordenadas de una determinada manera
       partida.mazo = new Mazo(); // es una clase que dota de metodos auxiliares tanto al server como al cliente en lo relativo a la mecanica del juego
-
+      
+      partida.subasta.restaurar = ()=>{console.log('metodo que restaura la subasta para las siguientes rondas')};
     }
 
     
